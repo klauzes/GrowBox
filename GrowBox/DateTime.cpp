@@ -1,5 +1,7 @@
 #include "DateTime.h"
 #include <Arduino.h>
+const static char* months[] = { "---", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul","Aug","Sep","Oct","Nov","Dec" };
+const static char* weekdays[] = { "---", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
 
 DateTime::DateTime(bool _now = false)
 {
@@ -9,6 +11,17 @@ DateTime::DateTime(bool _now = false)
 	d  = dow = 1;
 	if (_now)
 		now();
+}
+
+DateTime::DateTime(const DateTime& cpy)
+{
+	h = cpy.h;
+	m = cpy.m;
+	s = cpy.s;
+	d = cpy.d;
+	mm = cpy.mm;
+	yyyy = cpy.yyyy;
+	dow = cpy.dow;
 }
 
 DateTime::DateTime(int _h, int _m, int _s, int _d, int _mm, int _yyyy, int _dow):DateTime()
@@ -95,18 +108,24 @@ bool operator<=(const DateTime d1, const DateTime d2)
 	return false;
 }
 
-const char* DateTime::cTime()
+void DateTime::cTime(char* val)
 {
-	char ret[100];
-	sprintf(ret, "%.2s:%.2s:%.2s", formatedHour(), formatedMinute(), formatedSecond());
-	return ret;
+	char fh[3]; formatedHour(fh);
+	char fm[3]; formatedMinute(fm);
+	char fs[3]; formatedSecond(fs);
+	sprintf(val, "%.2s:%.2s:%.2s", fh, fm, fs);
 }
 
-const char* DateTime::cDate()
+void DateTime::cDate(char* val)
 {
-	char ret[80];
-	sprintf(ret, "%.2s-%.3s-%i", formatedDate(), month(), yyyy);
-	return ret;
+	char fd[3]; formatedDate(fd);
+	char fmt[4]; month(fmt);
+	int x = sprintf(val, "%.2s-%.3s-%.4i", fd, fmt, yyyy);
+}
+
+void DateTime::formatDecimal(int num, char* val)
+{
+	sprintf(val, num < 10 ? "0%.1i" : "%.2i", num);
 }
 
 void DateTime::save2RTC()
@@ -296,31 +315,22 @@ void DateTime::addDay(const int _d)
 	} while (i != 0);	
 }
 
-const char* DateTime::getMonthName(const int _m)
-{
-	const static char* months[] = { "---", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul","Aug","Sep","Oct","Nov","Dec" };
-	return months[_m];
+void DateTime::getMonthName(const int _m,char* val)
+{	
+	strcpy(val, months[_m]);	
 }
 
-const char* DateTime::getWeekdayName(const int _dow)
-{
-	const static char* weekdays[] = { "---", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
-	return weekdays[_dow];
+void DateTime::getWeekdayName(const int _dow,char* val)
+{	
+	strcpy(val, weekdays[_dow]);	
 }
 
-const char* DateTime::formatTime(int hms)
-{
-	char ret[3];	
-	sprintf(ret, hms<10?"0%i":"%i", hms);
-	return ret;
-}
-
-const char* DateTime::formatDate(int dd, int mm)
+void DateTime::formatDate(int dd, int mm,char* val)
 {		
 	if (dd)
-		return getWeekdayName(dd);
+		return getWeekdayName(dd,val);
 	else
-		return getMonthName(mm);
+		return getMonthName(mm,val);
 }
 
 bool DateTime::isLeapYear(int yyyy)

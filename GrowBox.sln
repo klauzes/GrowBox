@@ -5,8 +5,6 @@ VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GrowBox", "GrowBox\GrowBox.vcxproj", "{C5F80730-F44F-4478-BDAE-6634EFC2CA88}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RTC_Test", "RTC_Test\RTC_Test.vcxproj", "{A1E34E33-7CDD-455E-BE8E-B4FDB5EBBE1B}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x86 = Debug|x86
@@ -17,10 +15,6 @@ Global
 		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Debug|x86.Build.0 = Debug|Win32
 		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x86.ActiveCfg = Release|Win32
 		{C5F80730-F44F-4478-BDAE-6634EFC2CA88}.Release|x86.Build.0 = Release|Win32
-		{A1E34E33-7CDD-455E-BE8E-B4FDB5EBBE1B}.Debug|x86.ActiveCfg = Debug|Win32
-		{A1E34E33-7CDD-455E-BE8E-B4FDB5EBBE1B}.Debug|x86.Build.0 = Debug|Win32
-		{A1E34E33-7CDD-455E-BE8E-B4FDB5EBBE1B}.Release|x86.ActiveCfg = Release|Win32
-		{A1E34E33-7CDD-455E-BE8E-B4FDB5EBBE1B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

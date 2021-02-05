@@ -2,6 +2,7 @@
 static UI* p_staticUI;
 #include <Arduino.h>
 #include "PersistentData.h"
+#include "Log.h"
 #define DEFAULT_SCREEN_TIMEOUT 30
 
 UI::UI(Joystick* joy) : UI()
@@ -29,6 +30,7 @@ UI::~UI()
 
 void UI::createMainMenu()
 {
+	Log logAction("Create main menu screen");
 	prepareNewMenuEntry();
 	p_staticUI->p_currentMenu = new MainMenu(p_staticUI->p_joy, p_staticUI->p_display);
 	p_staticUI->p_currentMenu->addMenuItem(mainScreenMenuItem, "x");
@@ -46,7 +48,8 @@ void UI::mainScreenMenuItem(int x)
 }
 
 void UI::backToMainMenu(int val)
-{	
+{
+	Log logAction("Back to main menu");
 	if (p_staticUI->p_clockSetter) {
 		delete p_staticUI->p_clockSetter;
 		p_staticUI->p_clockSetter = nullptr;
@@ -58,9 +61,10 @@ void UI::backToMainMenu(int val)
 #pragma region ClockSettings
 void UI::setClockMenuItem(int val)
 {
+	Log logAction("Access Clock Settings");
 	prepareNewMenuEntry();
-	if(!p_staticUI->p_clockSetter)
-		p_staticUI->p_clockSetter = new DateTime();
+	if (!p_staticUI->p_clockSetter)
+		p_staticUI->p_clockSetter = new DateTime(true);
 	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
 	p_staticUI->p_currentMenu->addMenuItem(setHourMenuItem, "Set hour");
 	p_staticUI->p_currentMenu->addMenuItem(setMinuteMenuItem, "Set minute");
@@ -69,7 +73,7 @@ void UI::setClockMenuItem(int val)
 	p_staticUI->p_currentMenu->addMenuItem(setMonthMenuItem, "Set month");
 	p_staticUI->p_currentMenu->addMenuItem(setDateMenuItem, "Set date");
 	p_staticUI->p_currentMenu->addMenuItem(saveClockMenuItem, "Save settings");
-	p_staticUI->p_currentMenu->addMenuItem(mainScreenMenuItem, "Back");
+	p_staticUI->p_currentMenu->addMenuItem(mainScreenMenuItem, "Back");	
 }
 
 void UI::setHourMenuItem(int val)
@@ -88,6 +92,7 @@ void UI::setHourMenuItem(int val)
 
 void UI::setHour(int val)
 {
+	Log logAction("Hour was set");
 	if (p_staticUI->p_clockSetter) {
 		p_staticUI->p_clockSetter->setHour(val);
 	}
@@ -111,6 +116,7 @@ void UI::setMinuteMenuItem(int val)
 
 void UI::setMinute(int val)
 {
+	Log logAction("Minute was set");
 	if (p_staticUI->p_clockSetter) {
 		p_staticUI->p_clockSetter->setMinute(val);
 	}
@@ -135,6 +141,7 @@ void UI::setSecondMenuItem(int val)
 
 void UI::setSecond(int val)
 {
+	Log logAction("Second was set");
 	if (p_staticUI->p_clockSetter) {
 		p_staticUI->p_clockSetter->setSecond(val);
 	}
@@ -155,6 +162,7 @@ void UI::setYearMenuItem(int val)
 
 void UI::setYear(int val)
 {
+	Log logAction("Year was set");
 	if (p_staticUI->p_clockSetter) {
 		p_staticUI->p_clockSetter->setYear(2020+val);		
 	}
@@ -167,12 +175,14 @@ void UI::setMonthMenuItem(int val)
 	prepareNewMenuEntry();
 	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
 	for (int i = 1; i < 13; i++) {		
-		p_staticUI->p_currentMenu->addMenuItem(setMonth, p_staticUI->p_clockSetter->getMonthName(i));
+		char monthName[3]; p_staticUI->p_clockSetter->getMonthName(i, monthName);
+		p_staticUI->p_currentMenu->addMenuItem(setMonth, monthName);
 	}
 }
 
 void UI::setMonth(int val)
 {
+	Log logAction("Month was set");
 	if (p_staticUI->p_clockSetter) {
 		p_staticUI->p_clockSetter->setMonth(val+1);		
 	}
@@ -194,11 +204,13 @@ void UI::setDateMenuItem(int val)
 		p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
 		p_staticUI->p_currentMenu->setFont(u8g_font_7x13);
 		int daysInMonth = p_staticUI->p_clockSetter->daysInMonth(p_staticUI->p_clockSetter->mm, p_staticUI->p_clockSetter->yyyy);
-		const char* month = p_staticUI->p_clockSetter->getMonthName(p_staticUI->p_clockSetter->mm);
+		char month[3]; p_staticUI->p_clockSetter->getMonthName(p_staticUI->p_clockSetter->mm, month);
 		for (int i = 1; i <= daysInMonth; i++) {
 			char date[150];			
 			p_staticUI->p_clockSetter->setDate(i);
-			sprintf(date, "%s, %s", p_staticUI->p_clockSetter->getdayOfWeek(), p_staticUI->p_clockSetter->cDate());
+			char dow[3];  p_staticUI->p_clockSetter->getdayOfWeek(dow);
+			char cdate[12];  p_staticUI->p_clockSetter->cDate(cdate);
+			sprintf(date, "%s, %s", dow, cdate);
 			p_staticUI->p_currentMenu->addMenuItem(setDate, date);
 		}
 	}
@@ -206,6 +218,7 @@ void UI::setDateMenuItem(int val)
 
 void UI::setDate(int val)
 {
+	Log logAction("Date was set");
 	if (p_staticUI->p_clockSetter) {
 		p_staticUI->p_clockSetter->setDate(val+1);
 	}
@@ -231,12 +244,14 @@ void UI::saveClockMenuItem(int val)
 		p_staticUI->p_currentMenu = new MessageBox(p_staticUI->p_joy, p_staticUI->p_display, "SUCCESS", "Real Time Clock", "settings saved.");
 		p_staticUI->p_currentMenu->addMenuItem(mainScreenMenuItem, "x");
 	}
+	Log logAction("Clock was saved");
 }
 #pragma endregion
 
 #pragma region SoundSettings
 void UI::setSoundSettingsMenuItem(int val)
 {
+	Log logAction("Access Sound Settings");
 	prepareNewMenuEntry();
 	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
 	for (int i = 0; i <= 10; i++) {
@@ -249,6 +264,7 @@ void UI::setSoundSettingsMenuItem(int val)
 
 void UI::setSoundSettings(int val)
 {
+	Log logAction("Sound volume was set");
 	PersistentData::setVolume(val * 10);
 	mainScreenMenuItem(NULL);
 }
@@ -266,6 +282,7 @@ void UI::prepareNewMenuEntry()
 
 void UI::setManualControlMenuItem(int val)
 {
+	Log logAction("Access Manual Controls");
 }
 
 void UI::processUserInterface()
@@ -275,8 +292,8 @@ void UI::processUserInterface()
 		if (!p_staticUI->p_currentMenu->IsMainMenu())
 		{
 			DateTime now = DateTime(true);
-			Serial.print("now:"); Serial.println(now.cTime());
-			Serial.print("mtu:"); Serial.println(p_staticUI->m_menuTimeOut.cTime());
+			//Serial.print("now:"); Serial.println(now.cTime());
+			//Serial.print("mtu:"); Serial.println(p_staticUI->m_menuTimeOut.cTime());
 			if (p_staticUI->m_menuTimeOut <= now)
 				backToMainMenu(NULL);
 		}

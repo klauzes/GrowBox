@@ -5,13 +5,14 @@ class DateTime
 
 public:
 	DateTime(bool _now = false);
-	//DateTime(bool now);
+	DateTime(const DateTime& cpy);
 	DateTime(int _h, int _m, int _s, int _d, int _mm, int _yyyy, int _dow = -1);	
 	friend bool operator==(const DateTime d1, const DateTime d2);
 	friend bool operator>(const DateTime d1, const DateTime d2);
 	friend bool operator>=(const DateTime d1, const DateTime d2);
 	friend bool operator<(const DateTime d1,const DateTime d2);
 	friend bool operator<=(const DateTime d1,const DateTime d2);
+
 
 	int h;
 	int m;
@@ -20,14 +21,15 @@ public:
 	int mm;
 	int yyyy;
 	int dow;
-	const char* formatedHour() { return formatTime(h); };
-	const char* formatedMinute() { return formatTime(m); };
-	const char* formatedSecond() { return formatTime(s); };
-	const char* getdayOfWeek() { return formatDate(dow, 0); };
-	const char* formatedDate() { return formatTime(d); };
-	const char* month() { return formatDate(0, mm); };
-	const char* cTime();
-	const char* cDate();
+	void formatedHour(char* val) { return formatDecimal(h,val); };
+	void formatedMinute(char* val) { return formatDecimal(m,val); };
+	void formatedSecond(char* val) { return formatDecimal(s,val); };
+	void getdayOfWeek(char* val) { return formatDate(dow, 0,val); };
+	void formatedDate(char* val) { return formatDecimal(d,val); };
+	void formatedMonth(char* val) { return formatDecimal(mm,val); };
+	void month(char* val) { return formatDate(0, mm,val); };
+	void cTime(char* val);
+	void cDate(char* val);
 	void setHour(int _h) { h = _h; };
 	void setMinute(int _m) { m = _m; };
 	void setSecond(int _s) { s = _s; };
@@ -41,15 +43,14 @@ public:
 	void addMinutes(const int _m);	
 	void addSeconds(const int _s);
 	void addDay(const int _d);
-	const char* getMonthName(const int _m);
-	const char* getWeekdayName(const int _dow);
+	void getMonthName(const int _m,char* val);
+	void getWeekdayName(const int _dow,char* val);
 	int daysInMonth(int month, int year);
 
 private:
 	MD_DS1307 rtcInstance;
-	const char* formatTime(int hms);
-	const char* formatDate(int dd,int mm);
+	void formatDecimal(int num,char* val);
+	void formatDate(int dd,int mm,char* val);
 	bool isLeapYear(int yyyy);
 	
-
 };

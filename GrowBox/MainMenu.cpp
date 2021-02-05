@@ -14,11 +14,12 @@ MainMenu::MainMenu(Joystick* joy, U8GLIB_ST7920_128X64_1X* disp)
 void MainMenu::doMenu()
 {
 	p_display->firstPage();
-	DateTime curTime = DateTime();
-	curTime.now();
+	DateTime curTime(true);
+	char cTime[9]; curTime.cTime(cTime);
+	char cDate[12]; curTime.cDate(cDate);
 	do {
-		p_display->drawStr(0, p_display->getFontLineSpacing()*2, curTime.cTime());
-		p_display->drawStr(0, p_display->getFontLineSpacing()*3, curTime.cDate());
+		p_display->drawStr(0, p_display->getFontLineSpacing()*2, cTime);
+		p_display->drawStr(0, p_display->getFontLineSpacing()*3, cDate);
 	} while (p_display->nextPage());	
 	
 	if (p_joy->wasButtonPressed() && p_menuItems != nullptr) {
