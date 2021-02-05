@@ -1,6 +1,3 @@
-#include <Wire.h>
-#include <SPI.h>
-#include <SD.h>
 #include "Pins.h"
 #include "Joystick.h"
 #include "UI.h"

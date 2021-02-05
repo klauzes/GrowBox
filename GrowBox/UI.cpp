@@ -22,6 +22,7 @@ UI::UI()
 
 UI::~UI()
 {
+	//teoretic niciodata
 	if (p_currentMenu)
 		delete p_currentMenu;
 	if (p_display)
@@ -31,7 +32,7 @@ UI::~UI()
 void UI::createMainMenu()
 {
 	Log logAction("Create main menu screen");
-	prepareNewMenuEntry();
+	prepareNewMenuEntry();	
 	p_staticUI->p_currentMenu = new MainMenu(p_staticUI->p_joy, p_staticUI->p_display);
 	p_staticUI->p_currentMenu->addMenuItem(mainScreenMenuItem, "x");
 }
@@ -64,7 +65,7 @@ void UI::setClockMenuItem(int val)
 	Log logAction("Access Clock Settings");
 	prepareNewMenuEntry();
 	if (!p_staticUI->p_clockSetter)
-		p_staticUI->p_clockSetter = new DateTime(true);
+		p_staticUI->p_clockSetter = new DateTime();
 	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
 	p_staticUI->p_currentMenu->addMenuItem(setHourMenuItem, "Set hour");
 	p_staticUI->p_currentMenu->addMenuItem(setMinuteMenuItem, "Set minute");
@@ -196,6 +197,7 @@ void UI::setDateMenuItem(int val)
 	if (!p_staticUI->p_clockSetter->yyyy || !p_staticUI->p_clockSetter->mm)
 	{
 		Beeper::beepNOk();
+		prepareNewMenuEntry();
 		p_staticUI->p_currentMenu = new MessageBox(p_staticUI->p_joy, p_staticUI->p_display,"ERROR","Please set year","and month first.");
 		p_staticUI->p_currentMenu->addMenuItem(setClockMenuItem, "x");
 	}
@@ -232,7 +234,8 @@ void UI::saveClockMenuItem(int val)
 		!p_staticUI->p_clockSetter->d )
 	{
 		Beeper::beepNOk();
-		p_staticUI->p_currentMenu = new MessageBox(p_staticUI->p_joy, p_staticUI->p_display, "INCOMPLETE", "Please set all fields", "before saving.");
+		prepareNewMenuEntry();
+		p_staticUI->p_currentMenu = new MessageBox(p_staticUI->p_joy, p_staticUI->p_display, "INCOMPLETE", "Please fill all fields", "before saving.");
 		p_staticUI->p_currentMenu->addMenuItem(setClockMenuItem, "x");
 	}
 	else
@@ -241,6 +244,7 @@ void UI::saveClockMenuItem(int val)
 		delete p_staticUI->p_clockSetter;
 		p_staticUI->p_clockSetter = nullptr;
 		Beeper::beepOk();
+		prepareNewMenuEntry();
 		p_staticUI->p_currentMenu = new MessageBox(p_staticUI->p_joy, p_staticUI->p_display, "SUCCESS", "Real Time Clock", "settings saved.");
 		p_staticUI->p_currentMenu->addMenuItem(mainScreenMenuItem, "x");
 	}
@@ -292,8 +296,6 @@ void UI::processUserInterface()
 		if (!p_staticUI->p_currentMenu->IsMainMenu())
 		{
 			DateTime now = DateTime(true);
-			//Serial.print("now:"); Serial.println(now.cTime());
-			//Serial.print("mtu:"); Serial.println(p_staticUI->m_menuTimeOut.cTime());
 			if (p_staticUI->m_menuTimeOut <= now)
 				backToMainMenu(NULL);
 		}
