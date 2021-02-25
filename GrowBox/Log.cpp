@@ -1,5 +1,4 @@
 #include "log.h"
-#include <Arduino.h>
 #include <SPI.h>
 #include "DateTime.h"
 #include <SD.h>
@@ -9,10 +8,9 @@ Log::Log(const char* info, bool isDailyState , bool logsHoursState )
 {
 	isDaily = isDailyState;
 	logHour = logsHoursState;
-	if (!hasInit)
-		hasInit=initSD();
-	printLn(info);
-	
+	if (!hasInit)		
+		hasInit = initSD();
+	printLn(info);	
 }
 
 
@@ -55,12 +53,8 @@ void Log::printLn(const char* info)
 			}
 			logFile.println(info);
 			logFile.close();
-		}
-		else
-			Serial.println("nok card");		
-	}
-	else
-		Serial.println("nok sd init");
+		}			
+	}	
 }
 
 bool Log::initSD()

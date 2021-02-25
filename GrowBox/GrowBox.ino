@@ -1,7 +1,6 @@
 #include "Pins.h"
 #include "Joystick.h"
 #include "UI.h"
-
 #define DEFAULT_ENCODER_SENSITIVITY 2
 
 static Joystick* p_static_joystickHook = nullptr;
@@ -30,16 +29,10 @@ void setup()
     attachInterrupt(0, joystickIRQ, CHANGE);
     attachInterrupt(1, joystickButtonIRQ, LOW);
     p_userInterface = new UI(p_static_joystickHook);   
-    Serial.println("Setup done...");
+    Serial.println("Setup done..."); 
 }
 
 void loop()
-{/*
-    DateTime test(true);
-    char ctime[9]; test.cTime(ctime);
-    char cdate[12]; test.cDate(cdate);
-    Serial.println(ctime);
-    Serial.println(cdate);
-    delay(500);*/
-   p_userInterface->processUserInterface();
+{
+    p_userInterface->processUserInterface();    
 }

@@ -3,6 +3,7 @@ static UI* p_staticUI;
 #include <Arduino.h>
 #include "PersistentData.h"
 #include "Log.h"
+#include "Hardware.h"
 #define DEFAULT_SCREEN_TIMEOUT 30
 
 UI::UI(Joystick* joy) : UI()
@@ -154,9 +155,9 @@ void UI::setYearMenuItem(int val)
 {
 	prepareNewMenuEntry();
 	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
-	for (int i = 2020; i < 2100; i++) {
-		char buf[20];		
-		sprintf(buf, "%i", i);
+	for (int i = 2020; i < 2060; i++) {
+		char buf[5];		
+		sprintf(buf, "%.4i", i);
 		p_staticUI->p_currentMenu->addMenuItem(setYear, buf);
 	}
 }
@@ -176,7 +177,7 @@ void UI::setMonthMenuItem(int val)
 	prepareNewMenuEntry();
 	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
 	for (int i = 1; i < 13; i++) {		
-		char monthName[3]; p_staticUI->p_clockSetter->getMonthName(i, monthName);
+		char monthName[4]; p_staticUI->p_clockSetter->getMonthName(i, monthName);
 		p_staticUI->p_currentMenu->addMenuItem(setMonth, monthName);
 	}
 }
@@ -206,13 +207,13 @@ void UI::setDateMenuItem(int val)
 		p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
 		p_staticUI->p_currentMenu->setFont(u8g_font_7x13);
 		int daysInMonth = p_staticUI->p_clockSetter->daysInMonth(p_staticUI->p_clockSetter->mm, p_staticUI->p_clockSetter->yyyy);
-		char month[3]; p_staticUI->p_clockSetter->getMonthName(p_staticUI->p_clockSetter->mm, month);
+		char month[4]; p_staticUI->p_clockSetter->getMonthName(p_staticUI->p_clockSetter->mm, month);
 		for (int i = 1; i <= daysInMonth; i++) {
-			char date[150];			
+			char date[17];			
 			p_staticUI->p_clockSetter->setDate(i);
-			char dow[3];  p_staticUI->p_clockSetter->getdayOfWeek(dow);
+			char dow[4];  p_staticUI->p_clockSetter->getdayOfWeek(dow);
 			char cdate[12];  p_staticUI->p_clockSetter->cDate(cdate);
-			sprintf(date, "%s, %s", dow, cdate);
+			sprintf(date, "%.3s, %.11s", dow, cdate);
 			p_staticUI->p_currentMenu->addMenuItem(setDate, date);
 		}
 	}
@@ -287,7 +288,56 @@ void UI::prepareNewMenuEntry()
 void UI::setManualControlMenuItem(int val)
 {
 	Log logAction("Access Manual Controls");
+	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
+	p_staticUI->p_currentMenu->addMenuItem(LightsON, "Light ON");
+	p_staticUI->p_currentMenu->addMenuItem(LightsOFF, "Lights OFF");
+
+	p_staticUI->p_currentMenu->addMenuItem(fanON, "Fan ON");
+	p_staticUI->p_currentMenu->addMenuItem(fanOFF, "Fan OFF");
+
+	p_staticUI->p_currentMenu->addMenuItem(HeatON, "Heat ON");
+	p_staticUI->p_currentMenu->addMenuItem(HeatOFF, "Heat OFF");
+
+	p_staticUI->p_currentMenu->addMenuItem(mainScreenMenuItem, "Back");
 }
+
+void UI::fanON(int val)
+{
+	Hardware::setIntakeFan(true);
+	Beeper::beepOk;	
+}
+
+void UI::fanOFF(int val)
+{
+	Hardware::setIntakeFan(false);
+	Beeper::beepOk;
+}
+
+void UI::HeatON(int val)
+{
+	Hardware::setHeater(true);
+	Beeper::beepOk;
+}
+
+void UI::HeatOFF(int val)
+{
+	Hardware::setHeater(false);
+	Beeper::beepOk;
+}
+
+void UI::LightsON(int val)
+{
+	Hardware::setLights(true);
+	Beeper::beepOk;
+}
+
+void UI::LightsOFF(int val)
+{
+	Hardware::setLights(false);
+	Beeper::beepOk;
+}
+
+
 
 void UI::processUserInterface()
 {

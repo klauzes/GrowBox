@@ -48,4 +48,12 @@ private:
 	static void prepareNewMenuEntry();
 
 	static void setManualControlMenuItem(int val);
+	static void fanON(int val);
+	static void fanOFF(int val);
+
+	static void HeatON(int val);
+	static void HeatOFF(int val);
+
+	static void LightsON(int val);
+	static void LightsOFF(int val);
 };
