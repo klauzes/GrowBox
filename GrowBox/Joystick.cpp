@@ -1,6 +1,7 @@
 #include "Joystick.h"
 #include <Arduino.h>
 #include "Pins.h" 
+#include "Beeper.h"
 
 static bool m_wasButtonPressed;
 
@@ -12,6 +13,10 @@ Joystick::Joystick()
     pinMode(JOY_LH, INPUT_PULLUP);
     pinMode(JOY_RH, INPUT_PULLUP);
     reset();
+    do {
+        Beeper::beepNOk();
+        delay(250);
+    } while (digitalRead(JOY_LH) != digitalRead(JOY_RH));
 }
 
 Joystick::Joystick(int ticks) : Joystick()

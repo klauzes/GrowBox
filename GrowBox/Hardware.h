@@ -4,11 +4,11 @@
 class Hardware final
 {
 public:	
-	static float getTemperature();
-	static float getHumidity();
-	static float getWaterLevel(); //TODO implement Liters (as function of volume) but for now ADC
-	static float getSoilHumidity(); //TODO implement as percentage but for now ADC value 
-	static float getParticleCount();
+	static double getTemperature();
+	static double getHumidity();
+	static double getWaterLevel(); //TODO implement Liters (as function of volume) but for now ADC
+	static double getSoilHumidity(); //TODO implement as percentage but for now ADC value 
+	static double getParticleCount();
 	static void setWaterPump(bool state);
 	static void setIntakeFan(bool state);	
 	static void setHeater(bool state);

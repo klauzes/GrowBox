@@ -21,13 +21,13 @@ public:
 	virtual void addMenuItem(void (*menuFunction)(int x),const char* menuName);
 	int getIndex() { return m_menuItemsIndex; }
 	virtual void setFont(const u8g_fntpgm_uint8_t* font);
-	bool IsMainMenu() { return isMainMenu; }
+	bool isExpirable() { return doesNotTimeOut; }
 
 protected:
 	MenuItem* p_menuItems;
 	Joystick* p_joy;
-	U8GLIB_ST7920_128X64_1X* p_display;
+	U8GLIB_ST7920_128X64_4X* p_display;
 	void addMenuItem(MenuItem mItem);
 	int m_menuItemsIndex;
-	bool isMainMenu;
+	bool doesNotTimeOut;
 };

@@ -7,6 +7,7 @@
 #include "NavigationMenu.h"
 #include "MessageBox.h"
 #include "DateTime.h"
+#include "SensorMenu.h"
 
 class UI
 {
@@ -20,7 +21,7 @@ public:
 
 private:
 	Joystick* p_joy;
-	U8GLIB_ST7920_128X64_1X* p_display;
+	U8GLIB_ST7920_128X64_4X* p_display;
 	Menu* p_currentMenu;
 	DateTime* p_clockSetter;
 	DateTime  m_menuTimeOut;
@@ -45,15 +46,12 @@ private:
 
 	static void setSoundSettingsMenuItem(int val);
 	static void setSoundSettings(int val);
-	static void prepareNewMenuEntry();
 
 	static void setManualControlMenuItem(int val);
-	static void fanON(int val);
-	static void fanOFF(int val);
+	static void manualToggles(int val);
+	static void manualReadings(int val);
 
-	static void HeatON(int val);
-	static void HeatOFF(int val);
+	static void prepareNewMenuEntry();
+	static void resetScreenTimeout();
 
-	static void LightsON(int val);
-	static void LightsOFF(int val);
 };

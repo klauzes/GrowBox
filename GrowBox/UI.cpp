@@ -15,7 +15,7 @@ UI::UI()
 {	
 	p_currentMenu = nullptr;
 	p_clockSetter = nullptr;
-	p_display = new U8GLIB_ST7920_128X64_1X(LCD_EN, LCD_RW, LCD_RS, 0);
+	p_display = new U8GLIB_ST7920_128X64_4X(LCD_EN, LCD_RW, LCD_RS, 0);
 	p_staticUI = this;
 	m_menuTimeOut = DateTime();
 	createMainMenu();
@@ -275,75 +275,88 @@ void UI::setSoundSettings(int val)
 }
 #pragma endregion
 
-void UI::prepareNewMenuEntry()
-{
-	p_staticUI->m_menuTimeOut.now();
-	p_staticUI->m_menuTimeOut.addSeconds(DEFAULT_SCREEN_TIMEOUT);
-	if (p_staticUI->p_currentMenu) {
-		delete p_staticUI->p_currentMenu;
-		p_staticUI->p_currentMenu = nullptr;
-	}
-}
 
 void UI::setManualControlMenuItem(int val)
 {
 	Log logAction("Access Manual Controls");
+	prepareNewMenuEntry();
 	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
-	p_staticUI->p_currentMenu->addMenuItem(LightsON, "Light ON");
-	p_staticUI->p_currentMenu->addMenuItem(LightsOFF, "Lights OFF");
+	char lightStateBuf[11];
+	char fanStateBuf[8];
+	char heatStateBuf[9];
+	char waterStateBuf[10];
+	strcpy(lightStateBuf, Hardware::getLightsState()? "Lights OFF":"Lights ON");
+	strcpy(fanStateBuf, Hardware::getIntakeFanState()? "Fan OFF":"Fan ON");
+	strcpy(heatStateBuf, Hardware::getHeaterState()? "Heat OFF":"Heat ON");
+	strcpy(waterStateBuf, Hardware::getWaterPumpState()? "Water OFF":"Water ON");
+	
+	p_staticUI->p_currentMenu->addMenuItem(manualToggles,lightStateBuf);
+	p_staticUI->p_currentMenu->addMenuItem(manualToggles, fanStateBuf);
+	p_staticUI->p_currentMenu->addMenuItem(manualToggles, heatStateBuf);	
+	p_staticUI->p_currentMenu->addMenuItem(manualToggles, waterStateBuf);
 
-	p_staticUI->p_currentMenu->addMenuItem(fanON, "Fan ON");
-	p_staticUI->p_currentMenu->addMenuItem(fanOFF, "Fan OFF");
-
-	p_staticUI->p_currentMenu->addMenuItem(HeatON, "Heat ON");
-	p_staticUI->p_currentMenu->addMenuItem(HeatOFF, "Heat OFF");
+	p_staticUI->p_currentMenu->addMenuItem(manualReadings, "Air Temp.");
+	p_staticUI->p_currentMenu->addMenuItem(manualReadings, "Air Humidity");
+	p_staticUI->p_currentMenu->addMenuItem(manualReadings, "Soil Humidity");
+	p_staticUI->p_currentMenu->addMenuItem(manualReadings, "Water Level");
 
 	p_staticUI->p_currentMenu->addMenuItem(mainScreenMenuItem, "Back");
 }
 
-void UI::fanON(int val)
+void UI::manualToggles(int val)
 {
-	Hardware::setIntakeFan(true);
-	Beeper::beepOk;	
+	resetScreenTimeout();
+	switch (val)
+	{
+	case 0://lights
+		Hardware::setLights(!Hardware::getLightsState());
+		break;
+	case 1://fan
+		Hardware::setIntakeFan(!Hardware::getIntakeFanState());
+		break;
+	case 2://heat
+		Hardware::setHeater(!Hardware::getHeaterState());
+		break;
+	case 3://water
+		Hardware::setWaterPump(!Hardware::getWaterPumpState());
+		break;
+	}
+	Beeper::beepOk();
+	setManualControlMenuItem(NULL);
 }
 
-void UI::fanOFF(int val)
-{
-	Hardware::setIntakeFan(false);
-	Beeper::beepOk;
-}
+void UI::manualReadings(int val)
+{	
+	prepareNewMenuEntry();
+	Beeper::beepOk();
+	switch (val)
+	{
+		case 4://air temp
+			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_joy, p_staticUI->p_display, SensorMenu::Sensor::AirTemp, 50, 0);
+			p_staticUI->p_currentMenu->addMenuItem(setManualControlMenuItem, "x");
+			break;
+		case 5://air humidity
+			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_joy, p_staticUI->p_display, SensorMenu::Sensor::AirHumidity, 100, 0);
+			p_staticUI->p_currentMenu->addMenuItem(setManualControlMenuItem, "x");
+			break;
+		case 6://soil humidity
+			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_joy, p_staticUI->p_display, SensorMenu::Sensor::SoilHumidity, 100, 0);
+			p_staticUI->p_currentMenu->addMenuItem(setManualControlMenuItem, "x");
+			break;
+		case 7://water level
+			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_joy, p_staticUI->p_display, SensorMenu::Sensor::WaterLevel, 1024, 0);
+			p_staticUI->p_currentMenu->addMenuItem(setManualControlMenuItem, "x");
+			break;
+	}
 
-void UI::HeatON(int val)
-{
-	Hardware::setHeater(true);
-	Beeper::beepOk;
 }
-
-void UI::HeatOFF(int val)
-{
-	Hardware::setHeater(false);
-	Beeper::beepOk;
-}
-
-void UI::LightsON(int val)
-{
-	Hardware::setLights(true);
-	Beeper::beepOk;
-}
-
-void UI::LightsOFF(int val)
-{
-	Hardware::setLights(false);
-	Beeper::beepOk;
-}
-
 
 
 void UI::processUserInterface()
 {
 	if (p_staticUI->p_currentMenu) 
 	{
-		if (!p_staticUI->p_currentMenu->IsMainMenu())
+		if (!p_staticUI->p_currentMenu->isExpirable())
 		{
 			DateTime now = DateTime(true);
 			if (p_staticUI->m_menuTimeOut <= now)
@@ -354,5 +367,19 @@ void UI::processUserInterface()
 	}
 }
 
+void UI::prepareNewMenuEntry()
+{
+	resetScreenTimeout();
+	if (p_staticUI->p_currentMenu) {
+		delete p_staticUI->p_currentMenu;
+		p_staticUI->p_currentMenu = nullptr;
+	}
+}
+
+void UI::resetScreenTimeout()
+{
+	p_staticUI->m_menuTimeOut.now();
+	p_staticUI->m_menuTimeOut.addSeconds(DEFAULT_SCREEN_TIMEOUT);
+}
 
 

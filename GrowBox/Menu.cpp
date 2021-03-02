@@ -6,7 +6,7 @@ Menu::Menu()
 	p_menuItems = nullptr;
 	p_display = nullptr;
 	p_joy = nullptr;	
-	isMainMenu = false;
+	doesNotTimeOut = false;
 }
 
 Menu::~Menu()

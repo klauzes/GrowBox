@@ -3,48 +3,48 @@
 #include <dht.h>
 
 dht DHT;
-static bool m_WaterPumpState;
-static bool m_IntakeFanState;
-static bool m_HeaterState;
-static bool m_LightsState;
-static bool m_ParticleLED;
+static bool m_WaterPumpState = 0;
+static bool m_IntakeFanState = 0;
+static bool m_HeaterState = 0;
+static bool m_LightsState = 0;
+static bool m_ParticleLED = 0;
 
-float Hardware::getTemperature()
+double Hardware::getTemperature()
 {	
 	DHT.read21(DHT_22);	
-	return DHT.temperature;
+	return (double)DHT.temperature;
 }
 
-float Hardware::getHumidity()
+double Hardware::getHumidity()
 {
 	DHT.read21(DHT_22);
-	return DHT.humidity;
+	return (double)DHT.humidity;
 }
 
-float Hardware::getWaterLevel()
+double Hardware::getWaterLevel()
 {
 	pinMode(WATER_LVL, INPUT);
 	int adcValue = analogRead(WATER_LVL);
-	return (float)adcValue;
+	return (double)adcValue;
 }
 
-float Hardware::getSoilHumidity()
+double Hardware::getSoilHumidity()
 {
 	pinMode(SOIL_HUMIDITY, INPUT);
-	int adcValue = analogRead(SOIL_HUMIDITY);
-	return (float)adcValue;
+	int adcValue = 1023 - analogRead(SOIL_HUMIDITY);
+	return (double)adcValue;
 }
 
-float Hardware::getParticleCount()
+double Hardware::getParticleCount()
 {
 	pinMode(PARTICLE, INPUT);
 	setParticleSensorLed(false);
 	delayMicroseconds(280);
-	float readVal = analogRead(PARTICLE);
+	double readVal = analogRead(PARTICLE);
 	delayMicroseconds(40);
 	setParticleSensorLed(true);
-	float calcVoltage = readVal * (5.0 / 1024);
-	float dustDensity = 0.17f * calcVoltage - 0.1;
+	double calcVoltage = readVal * (5.0 / 1024);
+	double dustDensity = 0.17 * calcVoltage - 0.1;
 	if (dustDensity < 0)
 		dustDensity = 0;	
 	return dustDensity;
@@ -52,7 +52,7 @@ float Hardware::getParticleCount()
 
 void Hardware::setWaterPump(bool state)
 {
-	pinMode(RELAY_LIGHT, OUTPUT);
+	pinMode(WATER_PUMP, OUTPUT);
 	digitalWrite(WATER_PUMP, state);
 	m_WaterPumpState = state;
 }

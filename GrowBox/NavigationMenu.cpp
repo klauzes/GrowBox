@@ -1,7 +1,7 @@
 #include "NavigationMenu.h"
 #include "Arduino.h"
 
-NavigationMenu::NavigationMenu( Joystick* joy,U8GLIB_ST7920_128X64_1X* dsp )
+NavigationMenu::NavigationMenu( Joystick* joy,U8GLIB_ST7920_128X64_4X* dsp )
 {
 	p_display = dsp;
 	p_joy = joy;

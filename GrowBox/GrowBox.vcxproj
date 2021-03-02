@@ -126,6 +126,7 @@
     <ClInclude Include="NavigationMenu.h" />
     <ClInclude Include="PersistentData.h" />
     <ClInclude Include="Pins.h" />
+    <ClInclude Include="SensorMenu.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="__vm\.GrowBox.vsarduino.h" />
   </ItemGroup>
@@ -140,6 +141,7 @@
     <ClCompile Include="MessageBox.cpp" />
     <ClCompile Include="NavigationMenu.cpp" />
     <ClCompile Include="PersistentData.cpp" />
+    <ClCompile Include="SensorMenu.cpp" />
     <ClCompile Include="UI.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

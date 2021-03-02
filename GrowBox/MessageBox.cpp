@@ -1,7 +1,7 @@
 #include "MessageBox.h"
 
 
-MessageBox::MessageBox(Joystick* joy, U8GLIB_ST7920_128X64_1X* disp, const char* title, const char* message1, const char* message2)
+MessageBox::MessageBox(Joystick* joy, U8GLIB_ST7920_128X64_4X* disp, const char* title, const char* message1, const char* message2)
 {
 	p_display = disp;
 	p_joy = joy;
@@ -10,6 +10,7 @@ MessageBox::MessageBox(Joystick* joy, U8GLIB_ST7920_128X64_1X* disp, const char*
 	m_title = title;
 	m_message1 = message1;
 	m_message2 = message2;
+	doesNotTimeOut = true;
 }
 
 
