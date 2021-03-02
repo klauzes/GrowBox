@@ -78,15 +78,15 @@ void SensorMenu::doValuesAndGraph()
 	do {
 		p_display->drawLine(0, MAXHEIGHT / 2, MAXWIDTH, MAXHEIGHT / 2);
 		p_display->setFont(u8g_font_6x10);
-		char minValStr[8];//1024.12
-		char maxValStr[8];
-		char curValStr[8];
-		dtostrf(minValue, 4, 2, minValStr);
-		dtostrf(maxValue, 4, 2, maxValStr);
-		dtostrf(curValue, 4, 2, curValStr);
-		char strMin[13];
-		char strMax[13];
-		char strCur[13];
+		char minValStr[9];//1024.12
+		char maxValStr[9];//9 bytes in case of minus sign
+		char curValStr[9];
+		dtostrf(minValue, 5, 2, minValStr);//5 for minus in front
+		dtostrf(maxValue, 5, 2, maxValStr);
+		dtostrf(curValue, 5, 2, curValStr);
+		char strMin[14];//14 allow for minus sign
+		char strMax[14];
+		char strCur[14];
 		sprintf(strMin, "Min:%s", minValStr);
 		sprintf(strMax, "Max:%s", maxValStr);
 		sprintf(strCur, "Cur:%s", curValStr);
