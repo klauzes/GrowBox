@@ -6,13 +6,10 @@
 static bool m_wasButtonPressed;
 
 Joystick::Joystick()
-{
-    m_EncoderTicks = 4;   
+{ 
+    m_EncoderTicks = 4;
     m_wasButtonPressed = false; 
-    pinMode(JOY_BT, INPUT_PULLUP);
-    pinMode(JOY_LH, INPUT_PULLUP);
-    pinMode(JOY_RH, INPUT_PULLUP);
-    reset();
+    reset();  
     do {
         Beeper::beepNOk();
         delay(250);

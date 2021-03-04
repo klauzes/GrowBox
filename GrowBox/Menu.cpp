@@ -1,9 +1,10 @@
 #include "Menu.h"
+#include <Arduino.h>
 
 Menu::Menu()
 {	
 	m_menuItemsIndex = 0;	
-	p_menuItems = nullptr;
+	p_menuItems = new MenuItem[50];
 	p_display = nullptr;
 	p_joy = nullptr;	
 	doesNotTimeOut = false;
@@ -12,7 +13,7 @@ Menu::Menu()
 Menu::~Menu()
 {	
 	if (p_menuItems)
-	{
+	{	
 		delete[] p_menuItems;
 		p_menuItems = nullptr;		
 	}
@@ -21,10 +22,8 @@ Menu::~Menu()
 
 void Menu::addMenuItem(void(*menuFunction)(int x),const char* menuName)
 {
-	MenuItem newMenuItem;
-	newMenuItem.menuFunctionCall = menuFunction;	
-	strcpy(newMenuItem.menuFunctionName, menuName);
-	addMenuItem(newMenuItem);
+	p_menuItems[m_menuItemsIndex].menuFunctionCall = menuFunction;
+	strcpy(p_menuItems[m_menuItemsIndex++].menuFunctionName, menuName);
 }
 
 void Menu::setFont(const u8g_fntpgm_uint8_t* font)
@@ -33,17 +32,4 @@ void Menu::setFont(const u8g_fntpgm_uint8_t* font)
 		p_display->setFont(font);
 }
 
-void Menu::addMenuItem(MenuItem mItem)
-{
-	MenuItem* newItemList = new MenuItem[m_menuItemsIndex + 1];
-	newItemList[m_menuItemsIndex] = mItem;
 
-	if (m_menuItemsIndex)
-		memcpy(newItemList, p_menuItems, sizeof(MenuItem) * m_menuItemsIndex);
-
-	if (p_menuItems)
-		delete p_menuItems;
-
-	p_menuItems = newItemList;
-	m_menuItemsIndex++;
-}

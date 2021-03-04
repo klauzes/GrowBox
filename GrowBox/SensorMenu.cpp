@@ -2,7 +2,7 @@
 #include "Hardware.h"
 #include <Arduino.h>
 
-SensorMenu::SensorMenu(Joystick* joy, U8GLIB_ST7920_128X64_4X* disp, const Sensor senType, int maxPossible, int minPossible)
+SensorMenu::SensorMenu(Joystick* joy, U8GLIB_ST7920_128X64_4X* disp, const Sensor senType, double maxPossible, double minPossible)
 {
 	p_display = disp;
 	p_joy = joy;	
@@ -24,6 +24,11 @@ SensorMenu::SensorMenu(Joystick* joy, U8GLIB_ST7920_128X64_4X* disp, const Senso
 		break;
 	case SensorMenu::WaterLevel:
 		curValue = maxValue = minValue = Hardware::getWaterLevel();
+		break;
+	case SensorMenu::AirParticles:
+		maxPossibleValue = maxPossible * 100;
+		minPossibleValue = minPossible * 100;
+		curValue = maxValue = minValue = Hardware::getParticleCount() * 100;//subunitary values	
 		break;
 	default:
 		break;
@@ -50,25 +55,11 @@ void SensorMenu::doMenu()
 		curValue = Hardware::getWaterLevel();
 		processReading();
 		break;
+	case SensorMenu::AirParticles:
+		curValue = Hardware::getParticleCount() * 100;	
+		processReading();
+		break;
 	}
-}
-
-void SensorMenu::addReadingToList()
-{
-	if (readingCount < MAXWIDTH)
-	{
-		readings[readingCount] = curValue;
-		if (readingCount < MAXWIDTH)
-			readingCount++;
-	}
-	else
-	{
-		for (int i = 0; i < MAXWIDTH - 1; i++)
-		{
-			readings[i] = readings[i + 1];
-		}
-		readings[MAXWIDTH-1] = curValue;
-	}	
 }
 
 void SensorMenu::doValuesAndGraph()
@@ -108,7 +99,7 @@ void SensorMenu::doValuesAndGraph()
 int SensorMenu::barAsPercentage(double val)
 {
 	int availableSpace = MAXHEIGHT / 2;
-	int asPercentage = map((int)val, minPossibleValue, maxPossibleValue, MAXHEIGHT, availableSpace);	
+	int asPercentage = map(val, minPossibleValue, maxPossibleValue, MAXHEIGHT, availableSpace);	
 	return asPercentage <= availableSpace ? availableSpace : asPercentage; //if somehow measurements get larger than expected cap out to screen resolution
 }
 
@@ -120,4 +111,22 @@ void SensorMenu::processReading()
 		maxValue = curValue;
 	addReadingToList();
 	doValuesAndGraph();
+}
+
+void SensorMenu::addReadingToList()
+{
+	if (readingCount < MAXWIDTH)
+	{
+		readings[readingCount] = curValue;
+		if (readingCount < MAXWIDTH)
+			readingCount++;
+	}
+	else
+	{
+		for (int i = 0; i < MAXWIDTH - 1; i++)
+		{
+			readings[i] = readings[i + 1];
+		}
+		readings[MAXWIDTH - 1] = curValue;
+	}
 }

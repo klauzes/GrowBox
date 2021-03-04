@@ -107,11 +107,11 @@ void UI::setMinuteMenuItem(int val)
 	prepareNewMenuEntry();
 	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
 	for (int i = 0; i < 60; i++) {
-		char buf[14];	
+		char buf[12];		
 		if(i<10)
-			sprintf(buf, i==1?"0%i minute": "0%i minutes", i);
+			sprintf(buf, i==1?"0%d minute": "0%d minutes", i);
 		else
-			sprintf(buf, "%i minutes", i);
+			sprintf(buf, "%d minutes", i);
 		p_staticUI->p_currentMenu->addMenuItem(setMinute, buf);
 	}
 }
@@ -155,7 +155,7 @@ void UI::setYearMenuItem(int val)
 {
 	prepareNewMenuEntry();
 	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
-	for (int i = 2020; i < 2060; i++) {
+	for (int i = 2020; i < 2100; i++) {
 		char buf[5];		
 		sprintf(buf, "%.4i", i);
 		p_staticUI->p_currentMenu->addMenuItem(setYear, buf);
@@ -295,10 +295,12 @@ void UI::setManualControlMenuItem(int val)
 	p_staticUI->p_currentMenu->addMenuItem(manualToggles, heatStateBuf);	
 	p_staticUI->p_currentMenu->addMenuItem(manualToggles, waterStateBuf);
 
+	p_staticUI->p_currentMenu->addMenuItem(manualReadings, "Air Particles");
 	p_staticUI->p_currentMenu->addMenuItem(manualReadings, "Air Temp.");
 	p_staticUI->p_currentMenu->addMenuItem(manualReadings, "Air Humidity");
 	p_staticUI->p_currentMenu->addMenuItem(manualReadings, "Soil Humidity");
 	p_staticUI->p_currentMenu->addMenuItem(manualReadings, "Water Level");
+	
 
 	p_staticUI->p_currentMenu->addMenuItem(mainScreenMenuItem, "Back");
 }
@@ -331,19 +333,23 @@ void UI::manualReadings(int val)
 	Beeper::beepOk();
 	switch (val)
 	{
-		case 4://air temp
+		case 4://particle count
+			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_joy, p_staticUI->p_display, SensorMenu::Sensor::AirParticles, 0.6, 0);
+			p_staticUI->p_currentMenu->addMenuItem(setManualControlMenuItem, "x");
+			break;
+		case 5://air temp
 			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_joy, p_staticUI->p_display, SensorMenu::Sensor::AirTemp, 50, 0);
 			p_staticUI->p_currentMenu->addMenuItem(setManualControlMenuItem, "x");
 			break;
-		case 5://air humidity
+		case 6://air humidity
 			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_joy, p_staticUI->p_display, SensorMenu::Sensor::AirHumidity, 100, 0);
 			p_staticUI->p_currentMenu->addMenuItem(setManualControlMenuItem, "x");
 			break;
-		case 6://soil humidity
+		case 7://soil humidity
 			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_joy, p_staticUI->p_display, SensorMenu::Sensor::SoilHumidity, 100, 0);
 			p_staticUI->p_currentMenu->addMenuItem(setManualControlMenuItem, "x");
 			break;
-		case 7://water level
+		case 8://water level
 			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_joy, p_staticUI->p_display, SensorMenu::Sensor::WaterLevel, 1024, 0);
 			p_staticUI->p_currentMenu->addMenuItem(setManualControlMenuItem, "x");
 			break;

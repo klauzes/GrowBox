@@ -17,7 +17,6 @@ public:
 	static bool getIntakeFanState();
 	static bool getHeaterState();
 	static bool getLightsState();
+	static void setDefaultPinModesAndValues();
 
-private:
-	static void setParticleSensorLed(bool state);
 };

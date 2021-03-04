@@ -19,16 +19,16 @@ void MainMenu::doMenu()
 	char cTime[9]; curTime.cTime(cTime);
 	char cDate[12]; curTime.cDate(cDate);
 	double temp = Hardware::getTemperature();
-	double humy = Hardware::getHumidity();
+	double humidity = Hardware::getHumidity();
 	char bufTemp[7];
-	char bufHumy[7];
+	char bufHumi[7];
 	dtostrf(temp, 2, 2, bufTemp);
-	dtostrf(humy, 2, 2, bufHumy);
+	dtostrf(humidity, 2, 2, bufHumi);
 	do {
 		p_display->drawStr(0, p_display->getFontLineSpacing()+1, cTime);
 		p_display->drawStr(0, p_display->getFontLineSpacing()*2+1, cDate);
 		p_display->drawStr(0, p_display->getFontLineSpacing()*3+1, bufTemp);
-		p_display->drawStr(0, p_display->getFontLineSpacing()*4+1, bufHumy);
+		p_display->drawStr(0, p_display->getFontLineSpacing()*4+1, bufHumi);
 	} while (p_display->nextPage());	
 	
 	if (p_joy->wasButtonPressed() && p_menuItems != nullptr) {

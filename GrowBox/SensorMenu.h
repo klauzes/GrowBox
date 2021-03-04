@@ -10,10 +10,11 @@ public:
 		AirTemp = 0,
 		AirHumidity,
 		SoilHumidity,
-		WaterLevel
+		WaterLevel,
+		AirParticles
 	};
 
-	SensorMenu(Joystick* joy, U8GLIB_ST7920_128X64_4X* disp, const Sensor senType, int maxPossible, int minPossible);
+	SensorMenu(Joystick* joy, U8GLIB_ST7920_128X64_4X* disp, const Sensor senType, double maxPossible, double minPossible);
 	void doMenu() override;
 
 private:
