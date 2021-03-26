@@ -4,12 +4,9 @@ static UI* p_staticUI;
 #include "PersistentData.h"
 #include "Log.h"
 #include "Hardware.h"
-#define DEFAULT_SCREEN_TIMEOUT 30
+#include "Joystick.h"
+#include "Pins.h"
 
-UI::UI(Joystick* joy) : UI()
-{
-	p_joy = joy;
-}
 
 UI::UI()
 {	
@@ -34,7 +31,7 @@ void UI::createMainMenu()
 {
 	Log logAction("Create main menu screen");
 	prepareNewMenuEntry();	
-	p_staticUI->p_currentMenu = new MainMenu(p_staticUI->p_joy, p_staticUI->p_display);
+	p_staticUI->p_currentMenu = new MainMenu(p_staticUI->p_display);
 	p_staticUI->p_currentMenu->addMenuItem(mainScreenMenuItem, "x");
 }
 
@@ -42,7 +39,7 @@ void UI::createMainMenu()
 void UI::mainScreenMenuItem(int x)
 {
 	prepareNewMenuEntry();
-	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
+	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
 	p_staticUI->p_currentMenu->addMenuItem(setClockMenuItem, "Clock settings");
 	p_staticUI->p_currentMenu->addMenuItem(setSoundSettingsMenuItem, "Sound settings");
 	p_staticUI->p_currentMenu->addMenuItem(setManualControlMenuItem, "Manual control");
@@ -67,7 +64,7 @@ void UI::setClockMenuItem(int val)
 	prepareNewMenuEntry();
 	if (!p_staticUI->p_clockSetter)
 		p_staticUI->p_clockSetter = new DateTime();
-	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
+	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
 	p_staticUI->p_currentMenu->addMenuItem(setHourMenuItem, "Set hour");
 	p_staticUI->p_currentMenu->addMenuItem(setMinuteMenuItem, "Set minute");
 	p_staticUI->p_currentMenu->addMenuItem(setSecondMenuItem, "Set seconds");
@@ -81,7 +78,7 @@ void UI::setClockMenuItem(int val)
 void UI::setHourMenuItem(int val)
 {
 	prepareNewMenuEntry();
-	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
+	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
 	for (int i = 0; i < 24; i++) {
 		char buf[10];
 		if (i < 13)
@@ -105,7 +102,7 @@ void UI::setHour(int val)
 void UI::setMinuteMenuItem(int val)
 {
 	prepareNewMenuEntry();
-	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
+	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
 	for (int i = 0; i < 60; i++) {
 		char buf[12];		
 		if(i<10)
@@ -129,7 +126,7 @@ void UI::setMinute(int val)
 void UI::setSecondMenuItem(int val)
 {
 	prepareNewMenuEntry();
-	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
+	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
 	for (int i = 0; i < 60; i++) {
 		char buf[14];
 		if(i<10)
@@ -154,7 +151,7 @@ void UI::setSecond(int val)
 void UI::setYearMenuItem(int val)
 {
 	prepareNewMenuEntry();
-	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
+	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
 	for (int i = 2020; i < 2100; i++) {
 		char buf[5];		
 		sprintf(buf, "%.4i", i);
@@ -175,7 +172,7 @@ void UI::setYear(int val)
 void UI::setMonthMenuItem(int val)
 {
 	prepareNewMenuEntry();
-	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
+	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
 	for (int i = 1; i < 13; i++) {		
 		char monthName[4]; p_staticUI->p_clockSetter->getMonthName(i, monthName);
 		p_staticUI->p_currentMenu->addMenuItem(setMonth, monthName);
@@ -199,12 +196,12 @@ void UI::setDateMenuItem(int val)
 	{
 		Beeper::beepNOk();
 		prepareNewMenuEntry();
-		p_staticUI->p_currentMenu = new MessageBox(p_staticUI->p_joy, p_staticUI->p_display,"ERROR","Please set year","and month first.");
+		p_staticUI->p_currentMenu = new MessageBox(p_staticUI->p_display,"ERROR","Please set year","and month first.");
 		p_staticUI->p_currentMenu->addMenuItem(setClockMenuItem, "x");
 	}
 	else
 	{		
-		p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
+		p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
 		p_staticUI->p_currentMenu->setFont(u8g_font_7x13);
 		int daysInMonth = p_staticUI->p_clockSetter->daysInMonth(p_staticUI->p_clockSetter->mm, p_staticUI->p_clockSetter->yyyy);
 		char month[4]; p_staticUI->p_clockSetter->getMonthName(p_staticUI->p_clockSetter->mm, month);
@@ -236,7 +233,7 @@ void UI::saveClockMenuItem(int val)
 	{
 		Beeper::beepNOk();
 		prepareNewMenuEntry();
-		p_staticUI->p_currentMenu = new MessageBox(p_staticUI->p_joy, p_staticUI->p_display, "INCOMPLETE", "Please fill all fields", "before saving.");
+		p_staticUI->p_currentMenu = new MessageBox(p_staticUI->p_display, "INCOMPLETE", "Please fill all fields", "before saving.");
 		p_staticUI->p_currentMenu->addMenuItem(setClockMenuItem, "x");
 	}
 	else
@@ -246,7 +243,7 @@ void UI::saveClockMenuItem(int val)
 		p_staticUI->p_clockSetter = nullptr;
 		Beeper::beepOk();
 		prepareNewMenuEntry();
-		p_staticUI->p_currentMenu = new MessageBox(p_staticUI->p_joy, p_staticUI->p_display, "SUCCESS", "Real Time Clock", "settings saved.");
+		p_staticUI->p_currentMenu = new MessageBox(p_staticUI->p_display, "SUCCESS", "Real Time Clock", "settings saved.");
 		p_staticUI->p_currentMenu->addMenuItem(mainScreenMenuItem, "x");
 	}
 	Log logAction("Clock was saved");
@@ -258,7 +255,7 @@ void UI::setSoundSettingsMenuItem(int val)
 {
 	Log logAction("Access Sound Settings");
 	prepareNewMenuEntry();
-	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
+	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
 	for (int i = 0; i <= 10; i++) {
 		char volTxt[20];
 		sprintf(volTxt, "Vol %i", i);
@@ -280,7 +277,7 @@ void UI::setManualControlMenuItem(int val)
 {
 	Log logAction("Access Manual Controls");
 	prepareNewMenuEntry();
-	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_joy, p_staticUI->p_display);
+	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
 	char lightStateBuf[11];
 	char fanStateBuf[8];
 	char heatStateBuf[9];
@@ -334,23 +331,23 @@ void UI::manualReadings(int val)
 	switch (val)
 	{
 		case 4://particle count
-			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_joy, p_staticUI->p_display, SensorMenu::Sensor::AirParticles, 0.6, 0);
+			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_display, SensorMenu::Sensor::AirParticles, 0.6, 0);
 			p_staticUI->p_currentMenu->addMenuItem(setManualControlMenuItem, "x");
 			break;
 		case 5://air temp
-			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_joy, p_staticUI->p_display, SensorMenu::Sensor::AirTemp, 50, 0);
+			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_display, SensorMenu::Sensor::AirTemp, 50, 0);
 			p_staticUI->p_currentMenu->addMenuItem(setManualControlMenuItem, "x");
 			break;
 		case 6://air humidity
-			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_joy, p_staticUI->p_display, SensorMenu::Sensor::AirHumidity, 100, 0);
+			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_display, SensorMenu::Sensor::AirHumidity, 100, 0);
 			p_staticUI->p_currentMenu->addMenuItem(setManualControlMenuItem, "x");
 			break;
 		case 7://soil humidity
-			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_joy, p_staticUI->p_display, SensorMenu::Sensor::SoilHumidity, 100, 0);
+			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_display, SensorMenu::Sensor::SoilHumidity, 100, 0);
 			p_staticUI->p_currentMenu->addMenuItem(setManualControlMenuItem, "x");
 			break;
 		case 8://water level
-			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_joy, p_staticUI->p_display, SensorMenu::Sensor::WaterLevel, 1024, 0);
+			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_display, SensorMenu::Sensor::WaterLevel, 1024, 0);
 			p_staticUI->p_currentMenu->addMenuItem(setManualControlMenuItem, "x");
 			break;
 	}
@@ -368,7 +365,7 @@ void UI::processUserInterface()
 			if (p_staticUI->m_menuTimeOut <= now)
 				backToMainMenu(NULL);
 		}
-		p_joy->setMinMax(0, p_staticUI->p_currentMenu->getIndex() - 1);
+		Joystick::setMinMax(0, p_staticUI->p_currentMenu->getIndex() - 1);
 		p_staticUI->p_currentMenu->doMenu();
 	}
 }

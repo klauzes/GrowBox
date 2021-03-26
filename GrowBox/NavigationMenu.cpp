@@ -1,11 +1,11 @@
 #include "NavigationMenu.h"
 #include "Arduino.h"
+#include "Joystick.h"
 
-NavigationMenu::NavigationMenu( Joystick* joy,U8GLIB_ST7920_128X64_4X* dsp )
+NavigationMenu::NavigationMenu(U8GLIB_ST7920_128X64_4X* dsp )
 {
-	p_display = dsp;
-	p_joy = joy;
-	p_joy->reset();
+	p_display = dsp;	
+	Joystick::reset();
 
 	m_menuStart = m_menuEnd = m_menuItemsIndex = 0;
 	m_currentPage = -1;
@@ -14,7 +14,7 @@ NavigationMenu::NavigationMenu( Joystick* joy,U8GLIB_ST7920_128X64_4X* dsp )
 
 void NavigationMenu::doMenu()
 {	
-	p_joy->getPosition(m_selectedMenuItem);	
+	Joystick::getPosition(m_selectedMenuItem);	
 
 	if (m_selectedMenuItem >= m_menuEnd )	
 		m_currentPage++;	
@@ -41,7 +41,7 @@ void NavigationMenu::doMenu()
 		}
 	} while (p_display->nextPage());
 
-	if (p_joy->wasButtonPressed()) {
+	if (Joystick::wasButtonPressed()) {
 		Beeper::beepNav();
 		(*p_menuItems[m_selectedMenuItem].menuFunctionCall)(m_selectedMenuItem);
 	}

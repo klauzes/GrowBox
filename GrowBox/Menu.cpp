@@ -6,7 +6,6 @@ Menu::Menu()
 	m_menuItemsIndex = 0;	
 	p_menuItems = new MenuItem[50];
 	p_display = nullptr;
-	p_joy = nullptr;	
 	doesNotTimeOut = false;
 }
 

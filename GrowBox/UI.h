@@ -14,13 +14,11 @@ class UI
 
 public:
 	UI();	
-	UI(Joystick* joy);
 	~UI();
 	void processUserInterface();
 	
 
 private:
-	Joystick* p_joy;
 	U8GLIB_ST7920_128X64_4X* p_display;
 	Menu* p_currentMenu;
 	DateTime* p_clockSetter;

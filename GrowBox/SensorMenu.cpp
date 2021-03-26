@@ -1,11 +1,12 @@
 #include "SensorMenu.h"
 #include "Hardware.h"
+#include "Joystick.h"
 #include <Arduino.h>
 
-SensorMenu::SensorMenu(Joystick* joy, U8GLIB_ST7920_128X64_4X* disp, const Sensor senType, double maxPossible, double minPossible)
+
+SensorMenu::SensorMenu(U8GLIB_ST7920_128X64_4X* disp, const Sensor senType, double maxPossible, double minPossible)
 {
 	p_display = disp;
-	p_joy = joy;	
 	doesNotTimeOut = true;
 	sensorType = senType;
 	maxPossibleValue = maxPossible;
@@ -92,7 +93,7 @@ void SensorMenu::doValuesAndGraph()
 	} while (p_display->nextPage());
 
 	
-	if (p_joy->wasButtonPressed() && p_menuItems != nullptr)
+	if (Joystick::wasButtonPressed() && p_menuItems != nullptr)
 		(*p_menuItems[0].menuFunctionCall)(2);
 }
 

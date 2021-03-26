@@ -3,9 +3,9 @@
 #define LCD_RW			5
 #define LCD_RS			4
 #define DHT_21			12
-#define JOY_BT			3
-#define JOY_LH			2 //irq 0
-#define JOY_RH			8
+#define JOY_BT			19	//IRQ 4
+#define JOY_LH			2	//IRQ 0
+#define JOY_RH			3	//IRQ 1
 #define BEEPER			11
 #define MAXWIDTH		128
 #define MAXHEIGHT		64
@@ -22,3 +22,5 @@
 #define RELAY_HEATER	44
 #define SOIL_HUMIDITY	A15
 
+#define DEFAULT_ENCODER_SENSITIVITY 2
+#define DEFAULT_SCREEN_TIMEOUT 30

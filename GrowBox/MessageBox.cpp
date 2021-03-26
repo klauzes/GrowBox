@@ -1,12 +1,12 @@
 #include "MessageBox.h"
+#include  "Joystick.h"
 
 
-MessageBox::MessageBox(Joystick* joy, U8GLIB_ST7920_128X64_4X* disp, const char* title, const char* message1, const char* message2)
+MessageBox::MessageBox(U8GLIB_ST7920_128X64_4X* disp, const char* title, const char* message1, const char* message2)
 {
 	p_display = disp;
-	p_joy = joy;
-	p_joy->setMinMax(0, 0);
-	p_joy->reset();
+	Joystick::setMinMax(0, 0);
+	Joystick::reset();
 	m_title = title;
 	m_message1 = message1;
 	m_message2 = message2;
@@ -31,6 +31,6 @@ void MessageBox::doMenu()
 		p_display->drawStr(0, (MAXHEIGHT / 2) + p_display->getFontAscent()+2, m_message2);
 	} while (p_display->nextPage());
 
-	if (p_joy->wasButtonPressed() && p_menuItems != nullptr)
+	if (Joystick::wasButtonPressed() && p_menuItems != nullptr)
 		(*p_menuItems[0].menuFunctionCall)(2);
 }

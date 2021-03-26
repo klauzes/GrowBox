@@ -4,7 +4,7 @@
 class NavigationMenu final:public Menu
 {
 public:	
-	NavigationMenu(Joystick* joy, U8GLIB_ST7920_128X64_4X* dsp);
+	NavigationMenu(U8GLIB_ST7920_128X64_4X* dsp);
 	void  doMenu() override;	
 	void setFont(const u8g_fntpgm_uint8_t* font) override;
 private:		

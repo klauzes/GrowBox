@@ -4,7 +4,7 @@
 class MainMenu final: public Menu
 {
 public:
-	MainMenu(Joystick* joy, U8GLIB_ST7920_128X64_4X* disp);
+	MainMenu(U8GLIB_ST7920_128X64_4X* disp);
 	void doMenu() override;	
 
 };

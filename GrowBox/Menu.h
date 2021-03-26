@@ -25,7 +25,6 @@ public:
 
 protected:
 	MenuItem* p_menuItems;
-	Joystick* p_joy;
 	U8GLIB_ST7920_128X64_4X* p_display;
 	int m_menuItemsIndex;
 	bool doesNotTimeOut;

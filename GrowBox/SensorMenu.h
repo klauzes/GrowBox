@@ -14,7 +14,7 @@ public:
 		AirParticles
 	};
 
-	SensorMenu(Joystick* joy, U8GLIB_ST7920_128X64_4X* disp, const Sensor senType, double maxPossible, double minPossible);
+	SensorMenu(U8GLIB_ST7920_128X64_4X* disp, const Sensor senType, double maxPossible, double minPossible);
 	void doMenu() override;
 
 private:
