@@ -2,9 +2,9 @@
 #define LCD_EN			6
 #define LCD_RW			5
 #define LCD_RS			4
-#define DHT_22			12
+#define DHT_21			12
 #define JOY_BT			3
-#define JOY_LH			2
+#define JOY_LH			2 //irq 0
 #define JOY_RH			8
 #define BEEPER			11
 #define MAXWIDTH		128

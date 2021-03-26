@@ -7,29 +7,41 @@ static bool m_WaterPumpState = 0;
 static bool m_IntakeFanState = 0;
 static bool m_HeaterState = 0;
 static bool m_LightsState = 0;
+const double INITIAL_VALUE = -10;
+//const double MIN_INTEGRATION_TOLERANCE = 0.90; //10%
+//const double MAX_INTEGRATION_TOLERANCE = 1.90; //10%
+double m_Temperature = INITIAL_VALUE;
+double m_Humidity = INITIAL_VALUE;
+double m_WaterLevel = INITIAL_VALUE;
+double m_SoilHumidity = INITIAL_VALUE;
+double m_ParticleCount = INITIAL_VALUE;
 
 double Hardware::getTemperature()
-{	
-	DHT.read21(DHT_22);	
-	return (double)DHT.temperature;
+{
+	DHT.read21(DHT_21);
+	debounceReadings(m_Temperature, DHT.temperature);
+	return m_Temperature;
 }
 
 double Hardware::getHumidity()
 {
-	DHT.read21(DHT_22);
-	return (double)DHT.humidity;
+	DHT.read21(DHT_21);
+	debounceReadings(m_Humidity, DHT.humidity);
+	return m_Humidity;
 }
 
 double Hardware::getWaterLevel()
 {
 	int adcValue = analogRead(WATER_LVL);
-	return (double)adcValue;
+	debounceReadings(m_WaterLevel, adcValue);
+	return m_WaterLevel;
 }
 
 double Hardware::getSoilHumidity()
 {
 	int adcValue = 1023 - analogRead(SOIL_HUMIDITY);
-	return (double)adcValue;
+	debounceReadings(m_SoilHumidity, adcValue);
+	return m_SoilHumidity;
 }
 
 double Hardware::getParticleCount()
@@ -45,6 +57,7 @@ double Hardware::getParticleCount()
 	if (dustDensity < 0)
 		dustDensity = 0;	
 	analogWrite(PARTICLE_LED, 230);//pulse
+	//debounceReadings(m_ParticleCount, dustDensity);
 	return dustDensity;
 }
 
@@ -126,5 +139,13 @@ void Hardware::setDefaultPinModesAndValues()
 	pinMode(PARTICLE, INPUT);
 
 	delay(1000);
+}
+
+void Hardware::debounceReadings(double& variable, const double reading)
+{
+	if (reading > INITIAL_VALUE)
+	{
+		variable = reading;
+	}	
 }
 

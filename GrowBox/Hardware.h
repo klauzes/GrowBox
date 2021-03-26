@@ -18,5 +18,7 @@ public:
 	static bool getHeaterState();
 	static bool getLightsState();
 	static void setDefaultPinModesAndValues();
+	static void debounceReadings(double& variable,const double reading);
 
+	
 };
