@@ -1,4 +1,6 @@
 #pragma once
+#include "Pins.h"
+
 class Log 
 {
 public: 

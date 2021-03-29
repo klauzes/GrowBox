@@ -8,14 +8,20 @@ static UI* p_staticUI;
 #include "Pins.h"
 
 
-UI::UI()
-{	
+UI::UI(Automation* existing)
+{
 	p_currentMenu = nullptr;
 	p_clockSetter = nullptr;
+	p_automationSetter = nullptr;
 	p_display = new U8GLIB_ST7920_128X64_4X(LCD_EN, LCD_RW, LCD_RS, 0);
 	p_staticUI = this;
 	m_menuTimeOut = DateTime();
+	if (existing != nullptr)
+		p_automationProgram = new Automation(existing);
+	else
+		p_automationProgram = nullptr;
 	createMainMenu();
+	
 }
 
 UI::~UI()
@@ -25,33 +31,43 @@ UI::~UI()
 		delete p_currentMenu;
 	if (p_display)
 		delete p_display;
+	if (p_clockSetter)
+		delete p_clockSetter;
+	if (p_automationSetter)
+		delete p_automationSetter;
 }
 
 void UI::createMainMenu()
 {
-	Log logAction("Create main menu screen");
+	//Log logAction("Create main menu screen"); as demo
 	prepareNewMenuEntry();	
 	p_staticUI->p_currentMenu = new MainMenu(p_staticUI->p_display);
-	p_staticUI->p_currentMenu->addMenuItem(mainScreenMenuItem, "x");
+	p_staticUI->p_currentMenu->addMenuItem(firstMenuItemList, "x");
 }
 
 #pragma region MainMenu
-void UI::mainScreenMenuItem(int x)
+void UI::firstMenuItemList(int val)
 {
 	prepareNewMenuEntry();
 	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
 	p_staticUI->p_currentMenu->addMenuItem(setClockMenuItem, "Clock settings");
 	p_staticUI->p_currentMenu->addMenuItem(setSoundSettingsMenuItem, "Sound settings");
 	p_staticUI->p_currentMenu->addMenuItem(setManualControlMenuItem, "Manual control");
+	p_staticUI->p_currentMenu->addMenuItem(setAutomaticMode, "Automatic mode");
 	p_staticUI->p_currentMenu->addMenuItem(backToMainMenu, "Back");
 }
 
 void UI::backToMainMenu(int val)
 {
-	Log logAction("Back to main menu");
-	if (p_staticUI->p_clockSetter) {
+	if (p_staticUI->p_clockSetter) 
+	{
 		delete p_staticUI->p_clockSetter;
 		p_staticUI->p_clockSetter = nullptr;
+	}
+	if (p_staticUI->p_automationSetter != nullptr)
+	{
+		delete p_staticUI->p_automationSetter;
+		p_staticUI->p_automationSetter = nullptr;
 	}
 	p_staticUI->createMainMenu();
 }
@@ -60,9 +76,8 @@ void UI::backToMainMenu(int val)
 #pragma region ClockSettings
 void UI::setClockMenuItem(int val)
 {
-	Log logAction("Access Clock Settings");
 	prepareNewMenuEntry();
-	if (!p_staticUI->p_clockSetter)
+	if (p_staticUI->p_clockSetter == nullptr)
 		p_staticUI->p_clockSetter = new DateTime();
 	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
 	p_staticUI->p_currentMenu->addMenuItem(setHourMenuItem, "Set hour");
@@ -71,8 +86,18 @@ void UI::setClockMenuItem(int val)
 	p_staticUI->p_currentMenu->addMenuItem(setYearMenuItem, "Set year");
 	p_staticUI->p_currentMenu->addMenuItem(setMonthMenuItem, "Set month");
 	p_staticUI->p_currentMenu->addMenuItem(setDateMenuItem, "Set date");
+	p_staticUI->p_currentMenu->addMenuItem(setLoadCurrentDateTime, "Load current");
 	p_staticUI->p_currentMenu->addMenuItem(saveClockMenuItem, "Save settings");
-	p_staticUI->p_currentMenu->addMenuItem(mainScreenMenuItem, "Back");	
+	p_staticUI->p_currentMenu->addMenuItem(firstMenuItemList, "Back");
+}
+
+void UI::setLoadCurrentDateTime(int val)
+{
+	p_staticUI->p_clockSetter->now();
+	Beeper::beepOk();
+	prepareNewMenuEntry();
+	p_staticUI->p_currentMenu = new MessageBox(p_staticUI->p_display, "LOADED", "Current values read", "adjust and save!");
+	p_staticUI->p_currentMenu->addMenuItem(setClockMenuItem, "x");
 }
 
 void UI::setHourMenuItem(int val)
@@ -91,7 +116,6 @@ void UI::setHourMenuItem(int val)
 
 void UI::setHour(int val)
 {
-	Log logAction("Hour was set");
 	if (p_staticUI->p_clockSetter) {
 		p_staticUI->p_clockSetter->setHour(val);
 	}
@@ -115,7 +139,6 @@ void UI::setMinuteMenuItem(int val)
 
 void UI::setMinute(int val)
 {
-	Log logAction("Minute was set");
 	if (p_staticUI->p_clockSetter) {
 		p_staticUI->p_clockSetter->setMinute(val);
 	}
@@ -140,7 +163,6 @@ void UI::setSecondMenuItem(int val)
 
 void UI::setSecond(int val)
 {
-	Log logAction("Second was set");
 	if (p_staticUI->p_clockSetter) {
 		p_staticUI->p_clockSetter->setSecond(val);
 	}
@@ -161,7 +183,6 @@ void UI::setYearMenuItem(int val)
 
 void UI::setYear(int val)
 {
-	Log logAction("Year was set");
 	if (p_staticUI->p_clockSetter) {
 		p_staticUI->p_clockSetter->setYear(2020+val);		
 	}
@@ -181,7 +202,6 @@ void UI::setMonthMenuItem(int val)
 
 void UI::setMonth(int val)
 {
-	Log logAction("Month was set");
 	if (p_staticUI->p_clockSetter) {
 		p_staticUI->p_clockSetter->setMonth(val+1);		
 	}
@@ -218,7 +238,6 @@ void UI::setDateMenuItem(int val)
 
 void UI::setDate(int val)
 {
-	Log logAction("Date was set");
 	if (p_staticUI->p_clockSetter) {
 		p_staticUI->p_clockSetter->setDate(val+1);
 	}
@@ -244,38 +263,34 @@ void UI::saveClockMenuItem(int val)
 		Beeper::beepOk();
 		prepareNewMenuEntry();
 		p_staticUI->p_currentMenu = new MessageBox(p_staticUI->p_display, "SUCCESS", "Real Time Clock", "settings saved.");
-		p_staticUI->p_currentMenu->addMenuItem(mainScreenMenuItem, "x");
+		p_staticUI->p_currentMenu->addMenuItem(firstMenuItemList, "x");
 	}
-	Log logAction("Clock was saved");
 }
 #pragma endregion
 
 #pragma region SoundSettings
 void UI::setSoundSettingsMenuItem(int val)
 {
-	Log logAction("Access Sound Settings");
 	prepareNewMenuEntry();
 	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
 	for (int i = 0; i <= 10; i++) {
-		char volTxt[20];
+		char volTxt[7];
 		sprintf(volTxt, "Vol %i", i);
 		p_staticUI->p_currentMenu->addMenuItem(setSoundSettings, volTxt);
 	}
-	p_staticUI->p_currentMenu->addMenuItem(mainScreenMenuItem, "Back");
+	p_staticUI->p_currentMenu->addMenuItem(firstMenuItemList, "Back");
 }
 
 void UI::setSoundSettings(int val)
 {
-	Log logAction("Sound volume was set");
 	PersistentData::setVolume(val * 10);
-	mainScreenMenuItem(NULL);
+	firstMenuItemList(NULL);
 }
 #pragma endregion
 
 
 void UI::setManualControlMenuItem(int val)
 {
-	Log logAction("Access Manual Controls");
 	prepareNewMenuEntry();
 	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
 	char lightStateBuf[11];
@@ -299,7 +314,7 @@ void UI::setManualControlMenuItem(int val)
 	p_staticUI->p_currentMenu->addMenuItem(manualReadings, "Water Level");
 	
 
-	p_staticUI->p_currentMenu->addMenuItem(mainScreenMenuItem, "Back");
+	p_staticUI->p_currentMenu->addMenuItem(firstMenuItemList, "Back");
 }
 
 void UI::manualToggles(int val)
@@ -354,6 +369,178 @@ void UI::manualReadings(int val)
 
 }
 
+void UI::setAutomaticMode(int val)
+{
+	prepareNewMenuEntry();
+	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
+	if(p_staticUI->p_automationSetter == nullptr)
+		p_staticUI->p_automationSetter = new Automation();
+	p_staticUI->p_currentMenu->addMenuItem(setSunriseHourMenuItem, "Sunrise Hour");
+	p_staticUI->p_currentMenu->addMenuItem(setSunlightHoursMenuItem, "Sunlight Time");
+	p_staticUI->p_currentMenu->addMenuItem(setAirTemperatureMenuItem, "Air Temp");
+	p_staticUI->p_currentMenu->addMenuItem(setAirMaxHumidityMenuItem, "Air Max Humid");
+	p_staticUI->p_currentMenu->addMenuItem(setSoilHumidityMenuItem, "Soil Humidity");
+	p_staticUI->p_currentMenu->addMenuItem(setLoadConfigMenuItem, "Load config");
+	p_staticUI->p_currentMenu->addMenuItem(setSaveConfigurationMenuItem, "Save config");
+	p_staticUI->p_currentMenu->addMenuItem(setDeleteConfigurationMenuItem, "DELETE config");
+
+	p_staticUI->p_currentMenu->addMenuItem(firstMenuItemList, "Back");
+}
+
+void UI::setSunriseHourMenuItem(int val)
+{
+	prepareNewMenuEntry();
+	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
+	p_staticUI->p_currentMenu->setFont(u8g_font_7x13);		
+	for (int i = 0; i < 24; i++) {
+		char fHour[6];
+		sprintf(fHour, i<10?"0%d:00":"%d:00", i);
+		p_staticUI->p_currentMenu->addMenuItem(setSunriseHour, fHour);
+	}
+}
+
+void UI::setSunriseHour(int val)
+{
+	p_staticUI->p_automationSetter->setSunriseHour(val);
+	setAutomaticMode(NULL);
+}
+
+void UI::setSunlightHoursMenuItem(int val)
+{
+	prepareNewMenuEntry();
+	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
+	p_staticUI->p_currentMenu->setFont(u8g_font_7x13);
+	for (int i = 1; i < MAX_SUNLIGHT_HOURS; i++) {
+		char fDlightHours[6];
+		sprintf(fDlightHours, i < 10 ? "0%d:00" : "%d:00", i);
+		p_staticUI->p_currentMenu->addMenuItem(setSunlightHours, fDlightHours);
+	}
+}
+
+void UI::setSunlightHours(int val)
+{
+	p_staticUI->p_automationSetter->setSunlightHours(val);
+	setAutomaticMode(NULL);
+}
+
+void UI::setAirTemperatureMenuItem(int val)
+{
+	prepareNewMenuEntry();
+	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
+	p_staticUI->p_currentMenu->setFont(u8g_font_7x13);
+	for (int i = MIN_AIR_TEMP; i < MAX_AIR_TEMP; i++) {
+		char fAirTemp[11];
+		sprintf(fAirTemp, "%d Celsius", i);
+		p_staticUI->p_currentMenu->addMenuItem(setAirTemperature, fAirTemp);
+	}
+}
+
+void UI::setAirTemperature(int val)
+{
+	p_staticUI->p_automationSetter->setTemperature(val);
+	setAutomaticMode(NULL);
+}
+
+void UI::setAirMaxHumidityMenuItem(int val)
+{
+	prepareNewMenuEntry();
+	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
+	p_staticUI->p_currentMenu->setFont(u8g_font_7x13);
+	for (int i = MIN_AIR_HUMIDITY; i < MAX_AIR_HUMIDITY; i++) {
+		char fAirTemp[5];
+		sprintf(fAirTemp, "%d %", i);
+		p_staticUI->p_currentMenu->addMenuItem(setAirMax, fAirTemp);
+	}
+}
+
+void UI::setAirMax(int val)
+{
+	p_staticUI->p_automationSetter->setMaximuAirHumidity(val);
+	setAutomaticMode(NULL);
+}
+
+void UI::setSoilHumidityMenuItem(int val)
+{
+	prepareNewMenuEntry();
+	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
+	p_staticUI->p_currentMenu->setFont(u8g_font_7x13);
+	for (int i = MIN_SOIL_HUMIDITY; i < MAX_SOIL_HUMIDITY; i++) {
+		char fAirTemp[5];
+		sprintf(fAirTemp, "%d %", i);
+		p_staticUI->p_currentMenu->addMenuItem(setSoilHumidity, fAirTemp);
+	}
+}
+
+void UI::setSoilHumidity(int val)
+{
+	p_staticUI->p_automationSetter->setIdealSoilHumidity(val);
+	setAutomaticMode(NULL);
+}
+
+void UI::setLoadConfigMenuItem(int val)
+{
+	prepareNewMenuEntry();
+	if (p_staticUI->p_automationProgram == nullptr)
+	{
+		Beeper::beepNOk();
+		p_staticUI->p_currentMenu = new MessageBox(p_staticUI->p_display, "ERROR", "There is no existing", "configuration to load!");
+	}
+	else
+	{
+		if (p_staticUI->p_automationSetter != nullptr)
+			delete p_staticUI->p_automationSetter;
+		p_staticUI->p_automationSetter = new Automation(p_staticUI->p_automationProgram);
+		p_staticUI->p_currentMenu = new MessageBox(p_staticUI->p_display, "SUCCES", "Config loaded.Modify", "and then save!");
+		Beeper::beepOk();
+	}
+	p_staticUI->p_currentMenu->addMenuItem(setAutomaticMode, "x");
+}
+
+void UI::setSaveConfigurationMenuItem(int val)
+{
+	prepareNewMenuEntry();
+	if (!p_staticUI->p_automationSetter->isValid())
+	{
+		Beeper::beepNOk();
+		p_staticUI->p_currentMenu = new MessageBox(p_staticUI->p_display, "ERROR", "Configuration incomplete", "please set all fields!");
+		p_staticUI->p_currentMenu->addMenuItem(setAutomaticMode, "x");
+	}
+	else
+	{
+		p_staticUI->p_automationSetter->saveToPersistent();
+		p_staticUI->p_automationProgram->loadPersistent();
+		Beeper::beepOk();
+		p_staticUI->p_currentMenu = new MessageBox(p_staticUI->p_display, "SUCCES", "Configuration saved", "and apllied!");
+		p_staticUI->p_currentMenu->addMenuItem(firstMenuItemList, "x");
+	}
+}
+
+void UI::setDeleteConfigurationMenuItem(int val)
+{
+	prepareNewMenuEntry();
+	Beeper::beepNOk(); Beeper::beepNOk(); Beeper::beepNOk();
+	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
+	p_staticUI->p_currentMenu->addMenuItem(setDeleteConfiguration, "DELETE");
+	p_staticUI->p_currentMenu->addMenuItem(setAutomaticMode, "Back");
+}
+
+void UI::setDeleteConfiguration(int val)
+{
+	prepareNewMenuEntry();
+	if (p_staticUI->p_automationProgram != nullptr && p_staticUI->p_automationProgram->isValid())
+	{
+		Beeper::beepOk();
+		p_staticUI->p_currentMenu = new MessageBox(p_staticUI->p_display, "SUCCES", "Configuration deleted", "---");
+		p_staticUI->p_automationProgram->deletePersistent();
+		p_staticUI->p_currentMenu->addMenuItem(setAutomaticMode, "x");
+	}
+	else
+	{
+		Beeper::beepNOk();
+		p_staticUI->p_currentMenu = new MessageBox(p_staticUI->p_display, "ERROR", "Nothing to delete", "!!!");
+		p_staticUI->p_currentMenu->addMenuItem(setAutomaticMode, "x");
+	}
+}
 
 void UI::processUserInterface()
 {
@@ -384,5 +571,4 @@ void UI::resetScreenTimeout()
 	p_staticUI->m_menuTimeOut.now();
 	p_staticUI->m_menuTimeOut.addSeconds(DEFAULT_SCREEN_TIMEOUT);
 }
-
 

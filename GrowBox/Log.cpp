@@ -59,5 +59,5 @@ void Log::printLn(const char* info)
 
 bool Log::initSD()
 {
-	return SD.begin(53);
+	return SD.begin(SD_CS);
 }
