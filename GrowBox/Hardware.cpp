@@ -129,7 +129,7 @@ void Hardware::setLights(bool state)
 	{
 		if (state == m_lightsState)
 			return;
-		digitalWrite(RELAY_LIGHT, state); //active low
+		digitalWrite(RELAY_LIGHT, state); 
 		m_lightsState = state;
 		if (!getManualControl())
 			m_lightsLastChange = millis() + DEFAULT_RELAY_DEBOUNCE;

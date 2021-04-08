@@ -41,14 +41,10 @@ void loop()
 #ifdef REAL_MODE
     p_userInterface->processUserInterface();
     Automation* curentAutomation = p_userInterface->getProgram();
-   if (curentAutomation != nullptr && curentAutomation->isValid()) 
-    {       
-        curentAutomation->doRoutine();       
-    }
-    else if(!Hardware::getManualControl())
-    {
+    if (curentAutomation != nullptr && curentAutomation->isValid() && !Hardware::getManualControl())
+        curentAutomation->doRoutine();
+    else
         Hardware::setDefaultPinModesAndValues();
-    }    
 #else
     tests();
 #endif
