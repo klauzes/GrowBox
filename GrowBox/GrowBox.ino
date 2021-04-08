@@ -5,33 +5,61 @@
 #include <Arduino.h>
 #include "Automation.h"
 
+#define REAL_MODE;
 
+#ifdef REAL_MODE
 UI* p_userInterface = nullptr;
+Automation* currentConfig = new Automation();
+#endif // REAL_MODE
+
+
 
 void setup()
 {
-    Automation* savedConfigIfAny = new Automation();
-    savedConfigIfAny->loadPersistent();
-   
-    Hardware::setDefaultPinModesAndValues();    
-    Serial.begin(115200);  
-    Joystick::constructor(DEFAULT_ENCODER_SENSITIVITY);
+    Serial.begin(115200);
     while (!Serial) {};
-    if (savedConfigIfAny->isValid()) 
+    Hardware::setDefaultPinModesAndValues();
+
+#ifdef REAL_MODE
+    currentConfig->loadPersistent();      
+    Joystick::constructor(DEFAULT_ENCODER_SENSITIVITY);  
+    if (currentConfig->isValid())
     {
-        Serial.println("isvalidconfing");
-        p_userInterface = new UI(savedConfigIfAny);
+        p_userInterface = new UI(currentConfig);
     }
     else
     {
         p_userInterface = new UI(nullptr);
-        delete savedConfigIfAny;
-        savedConfigIfAny = nullptr;
+        delete currentConfig;
+        currentConfig = nullptr;
     }
-    Serial.println("Setup done...");     	
+#endif  	
 }
 
 void loop()
 {
+#ifdef REAL_MODE
     p_userInterface->processUserInterface();
+    Automation* curentAutomation = p_userInterface->getProgram();
+   if (curentAutomation != nullptr && curentAutomation->isValid()) 
+    {       
+        curentAutomation->doRoutine();       
+    }
+    else if(!Hardware::getManualControl())
+    {
+        Hardware::setDefaultPinModesAndValues();
+    }    
+#else
+    tests();
+#endif
+}
+
+
+void tests()
+{
+    Hardware::setManualControl(true);
+    Hardware::setLights(true);
+    delay(2000);
+    Hardware::setLights(false);
+    delay(2000);
 }

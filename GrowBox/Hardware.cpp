@@ -1,47 +1,60 @@
 #include "Hardware.h"
+#include <DHT_U.h>
+#include "Pins.h"
 #include <Arduino.h>
-#include <dht.h>
 
-dht DHT;
-static bool m_WaterPumpState = 0;
-static bool m_IntakeFanState = 0;
-static bool m_HeaterState = 0;
-static bool m_LightsState = 0;
-const double INITIAL_VALUE = -10;
-//const double MIN_INTEGRATION_TOLERANCE = 0.90; //10%
-//const double MAX_INTEGRATION_TOLERANCE = 1.90; //10%
-double m_Temperature = INITIAL_VALUE;
-double m_Humidity = INITIAL_VALUE;
-double m_WaterLevel = INITIAL_VALUE;
-double m_SoilHumidity = INITIAL_VALUE;
-double m_ParticleCount = INITIAL_VALUE;
+static DHT m_dht(DHT_21, DHT21);
+static bool m_waterPumpState = false;
+static bool m_intakeFanState = false;
+static bool m_heaterState = false;
+static bool m_lightsState = false;
+static bool m_manualControl = false;
+ 
+static const double INITIAL_VALUE = -1;
+static const unsigned long DEFAULT_RELAY_DEBOUNCE = 30000;
+static const unsigned long DEFAULT_DHT_READ_INTERVAL = 2000;
+
+
+static double m_temp = INITIAL_VALUE;
+static double m_humidity = INITIAL_VALUE;
+static double m_waterLevel = INITIAL_VALUE;
+static double m_soilHumidity = INITIAL_VALUE;
+static double m_particleCount = INITIAL_VALUE;
+
+static unsigned long m_waterPumpLastChange = 0;
+static unsigned long m_intakeFanLastChange = 0;
+static unsigned long m_heaterLastChange = 0;
+static unsigned long m_lightsLastChange = 0;
+
 
 double Hardware::getTemperature()
 {
-	DHT.read21(DHT_21);
-	debounceReadings(m_Temperature, DHT.temperature);
-	return m_Temperature;
+	float readT = m_dht.readTemperature();
+	if(!isnan(readT))
+		m_temp = readT;
+	return m_temp;
 }
 
 double Hardware::getHumidity()
 {
-	DHT.read21(DHT_21);
-	debounceReadings(m_Humidity, DHT.humidity);
-	return m_Humidity;
+	float readH = m_dht.readHumidity();
+	if (!isnan(readH))
+		m_humidity = readH;
+	return m_humidity;
 }
 
 double Hardware::getWaterLevel()
 {
 	int adcValue = analogRead(WATER_LVL);
-	debounceReadings(m_WaterLevel, adcValue);
-	return m_WaterLevel;
+	debounceReadings(m_waterLevel, adcValue);
+	return m_waterLevel;
 }
 
 double Hardware::getSoilHumidity()
 {
 	int adcValue = 1023 - analogRead(SOIL_HUMIDITY);
-	debounceReadings(m_SoilHumidity, adcValue);
-	return m_SoilHumidity;
+	debounceReadings(m_soilHumidity, adcValue);
+	return m_soilHumidity;
 }
 
 double Hardware::getParticleCount()
@@ -57,60 +70,105 @@ double Hardware::getParticleCount()
 	if (dustDensity < 0)
 		dustDensity = 0;	
 	analogWrite(PARTICLE_LED, 230);//pulse
-	//debounceReadings(m_ParticleCount, dustDensity);
+	//debounceReadings(m_particleCount, dustDensity);
 	return dustDensity;
 }
 
 void Hardware::setWaterPump(bool state)
 {
-	digitalWrite(WATER_PUMP, state);
-	m_WaterPumpState = state;
+	if (millis() > m_waterPumpLastChange)
+	{
+		if (state == m_waterPumpState)
+			return;
+		digitalWrite(WATER_PUMP, state);
+		m_waterPumpState = state;
+		if (!getManualControl())
+			m_waterPumpLastChange = millis() + DEFAULT_RELAY_DEBOUNCE;
+	}	
 }
 
 void Hardware::setIntakeFan(bool state)
 {
-	if (!state && m_HeaterState)
-		return;//can't turn off fan if heater is on
-	digitalWrite(RELAY_FAN, !state);
-	m_IntakeFanState = state;
+	if (millis() > m_intakeFanLastChange)
+	{
+		if (state == m_intakeFanState)
+			return;
+		if (!state && m_heaterState)
+			return;//can't turn off fan if heater is on
+		digitalWrite(RELAY_FAN, state);
+		m_intakeFanState = state;
+		if (!getManualControl())
+			m_intakeFanLastChange = millis() + DEFAULT_RELAY_DEBOUNCE;
+	}
 }
 
 void Hardware::setHeater(bool state)
 {
-	digitalWrite(RELAY_HEATER, !state);
-	m_HeaterState = state;
-	if (state) //heater always turns fan On
-		setIntakeFan(true);
+	/*Serial.print("setHeater"); Serial.println(state);
+	Serial.print("m_heaterLastChange"); Serial.println(m_heaterLastChange);
+	Serial.print("getManualControl()"); Serial.println(getManualControl());
+	Serial.print("DEFAULT_RELAY_DEBOUNCE"); Serial.println(DEFAULT_RELAY_DEBOUNCE);*/
+	if (millis() > m_heaterLastChange)
+	{		
+		if (state == m_heaterState)
+			return;
+		digitalWrite(RELAY_HEATER, state);
+		m_heaterState = state;
+		if (state) //heater always turns fan On
+		{			
+			setIntakeFan(true);
+		}
+		if(!getManualControl())
+			m_heaterLastChange = millis() + DEFAULT_RELAY_DEBOUNCE;
+	}
 }
 
 void Hardware::setLights(bool state)
 {
-	digitalWrite(RELAY_LIGHT, !state); //active low
-	m_LightsState = state;
+	if (millis()> m_lightsLastChange)
+	{
+		if (state == m_lightsState)
+			return;
+		digitalWrite(RELAY_LIGHT, state); //active low
+		m_lightsState = state;
+		if (!getManualControl())
+			m_lightsLastChange = millis() + DEFAULT_RELAY_DEBOUNCE;
+	}
+}
+
+void Hardware::setManualControl(bool state)
+{
+	m_manualControl = state;
 }
 
 bool Hardware::getWaterPumpState()
 {
-	return m_WaterPumpState;
+	return m_waterPumpState;
 }
 
 bool Hardware::getIntakeFanState()
 {
-	return m_IntakeFanState;
+	return m_intakeFanState;
 }
 
 bool Hardware::getHeaterState()
 {
-	return m_HeaterState;
+	return m_heaterState;
 }
 
 bool Hardware::getLightsState()
 {
-	return m_LightsState;
+	return m_lightsState;
+}
+
+bool Hardware::getManualControl()
+{
+	return m_manualControl;
 }
 
 void Hardware::setDefaultPinModesAndValues()
 {
+	m_dht.begin();
 	pinMode(SD_CS, OUTPUT);
 	digitalWrite(SD_CS, LOW);
 
@@ -118,13 +176,13 @@ void Hardware::setDefaultPinModesAndValues()
 	digitalWrite(WATER_PUMP, LOW);
 
 	pinMode(RELAY_FAN, OUTPUT);
-	digitalWrite(RELAY_FAN, HIGH);
+	digitalWrite(RELAY_FAN, LOW);
 
 	pinMode(RELAY_HEATER, OUTPUT);
-	digitalWrite(RELAY_HEATER, HIGH);
+	digitalWrite(RELAY_HEATER, LOW);
 
 	pinMode(RELAY_LIGHT, OUTPUT);
-	digitalWrite(RELAY_LIGHT, HIGH);
+	digitalWrite(RELAY_LIGHT, LOW);
 
 	pinMode(PARTICLE_LED, OUTPUT);//ACTIVE LOW
 	//digitalWrite(PARTICLE_LED, HIGH);
@@ -137,15 +195,13 @@ void Hardware::setDefaultPinModesAndValues()
 	pinMode(WATER_LVL, INPUT);
 	pinMode(SOIL_HUMIDITY, INPUT);
 	pinMode(PARTICLE, INPUT);
-
-	delay(1000);
 }
 
 void Hardware::debounceReadings(double& variable, const double reading)
 {
-	if (reading > INITIAL_VALUE)
+	if (reading > INITIAL_VALUE  && reading < 1024)
 	{
 		variable = reading;
-	}	
+	}
 }
 

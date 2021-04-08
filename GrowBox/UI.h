@@ -18,6 +18,7 @@ public:
 	UI(Automation* existing);
 	~UI();
 	void processUserInterface();
+	Automation* getProgram();
 	
 
 private:
@@ -26,7 +27,7 @@ private:
 	DateTime* p_clockSetter;
 	Automation* p_automationSetter;
 	Automation* p_automationProgram;
-	DateTime  m_menuTimeOut;
+	DateTime  m_menuTimeOut;	
 	void createMainMenu();
 	static void firstMenuItemList(int val);
 	static void backToMainMenu(int val);
