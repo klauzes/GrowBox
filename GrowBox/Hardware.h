@@ -21,6 +21,5 @@ public:
 	static bool getManualControl();
 
 	static void setDefaultPinModesAndValues();
-	static void debounceReadings(double& variable,const double reading);
 
 };

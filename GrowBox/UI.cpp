@@ -20,8 +20,7 @@ UI::UI(Automation* existing)
 		p_automationProgram = new Automation(existing);
 	else
 		p_automationProgram = nullptr;
-	createMainMenu();
-	
+	createMainMenu();	
 }
 
 UI::~UI()
@@ -64,7 +63,8 @@ void UI::firstMenuItemList(int val)
 
 void UI::backToMainMenu(int val)
 {
-	if (p_staticUI->p_clockSetter) 
+	Hardware::setManualControl(false);
+	if (p_staticUI->p_clockSetter != nullptr) 
 	{
 		delete p_staticUI->p_clockSetter;
 		p_staticUI->p_clockSetter = nullptr;
@@ -73,8 +73,7 @@ void UI::backToMainMenu(int val)
 	{
 		delete p_staticUI->p_automationSetter;
 		p_staticUI->p_automationSetter = nullptr;
-	}
-	Hardware::setManualControl(false);
+	}	
 	p_staticUI->createMainMenu();
 }
 #pragma endregion

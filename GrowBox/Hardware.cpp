@@ -11,8 +11,8 @@ static bool m_lightsState = false;
 static bool m_manualControl = false;
  
 static const double INITIAL_VALUE = -1;
-static const unsigned long DEFAULT_RELAY_DEBOUNCE = 30000;
-static const unsigned long DEFAULT_DHT_READ_INTERVAL = 2000;
+static const unsigned long DEFAULT_RELAY_DEBOUNCE = 30000; //????
+static const unsigned long DEFAULT_DHT_READ_INTERVAL = 2000; //???
 
 
 static double m_temp = INITIAL_VALUE;
@@ -45,15 +45,13 @@ double Hardware::getHumidity()
 
 double Hardware::getWaterLevel()
 {
-	int adcValue = analogRead(WATER_LVL);
-	debounceReadings(m_waterLevel, adcValue);
+	m_waterLevel = analogRead(WATER_LVL);
 	return m_waterLevel;
 }
 
 double Hardware::getSoilHumidity()
 {
-	int adcValue = 1023 - analogRead(SOIL_HUMIDITY);
-	debounceReadings(m_soilHumidity, adcValue);
+	m_soilHumidity = 1023 - analogRead(SOIL_HUMIDITY);
 	return m_soilHumidity;
 }
 
@@ -76,7 +74,7 @@ double Hardware::getParticleCount()
 
 void Hardware::setWaterPump(bool state)
 {
-	if (millis() > m_waterPumpLastChange)
+	if (millis() > m_waterPumpLastChange || getManualControl())
 	{
 		if (state == m_waterPumpState)
 			return;
@@ -89,7 +87,7 @@ void Hardware::setWaterPump(bool state)
 
 void Hardware::setIntakeFan(bool state)
 {
-	if (millis() > m_intakeFanLastChange)
+	if (millis() > m_intakeFanLastChange || getManualControl())
 	{
 		if (state == m_intakeFanState)
 			return;
@@ -104,15 +102,19 @@ void Hardware::setIntakeFan(bool state)
 
 void Hardware::setHeater(bool state)
 {
-	/*Serial.print("setHeater"); Serial.println(state);
+	Serial.print("setHeater"); Serial.println(state);
 	Serial.print("m_heaterLastChange"); Serial.println(m_heaterLastChange);
 	Serial.print("getManualControl()"); Serial.println(getManualControl());
-	Serial.print("DEFAULT_RELAY_DEBOUNCE"); Serial.println(DEFAULT_RELAY_DEBOUNCE);*/
-	if (millis() > m_heaterLastChange)
+	Serial.print("millis()"); Serial.println(millis());
+	Serial.print("m_heaterState"); Serial.println(m_heaterState);
+	//Serial.print("DEFAULT_RELAY_DEBOUNCE"); Serial.println(DEFAULT_RELAY_DEBOUNCE);
+	if (millis() > m_heaterLastChange || getManualControl())
 	{		
+		Serial.println("insideIF");
 		if (state == m_heaterState)
 			return;
 		digitalWrite(RELAY_HEATER, state);
+		Serial.println("wroteState");
 		m_heaterState = state;
 		if (state) //heater always turns fan On
 		{			
@@ -125,7 +127,7 @@ void Hardware::setHeater(bool state)
 
 void Hardware::setLights(bool state)
 {
-	if (millis()> m_lightsLastChange)
+	if (millis()> m_lightsLastChange || getManualControl())
 	{
 		if (state == m_lightsState)
 			return;
@@ -174,15 +176,19 @@ void Hardware::setDefaultPinModesAndValues()
 
 	pinMode(WATER_PUMP, OUTPUT);
 	digitalWrite(WATER_PUMP, LOW);
+	m_waterPumpState = false;
 
 	pinMode(RELAY_FAN, OUTPUT);
 	digitalWrite(RELAY_FAN, LOW);
+	m_intakeFanState = false;
 
 	pinMode(RELAY_HEATER, OUTPUT);
 	digitalWrite(RELAY_HEATER, LOW);
+	m_heaterState = false;
 
 	pinMode(RELAY_LIGHT, OUTPUT);
 	digitalWrite(RELAY_LIGHT, LOW);
+	m_lightsState = false;
 
 	pinMode(PARTICLE_LED, OUTPUT);//ACTIVE LOW
 	//digitalWrite(PARTICLE_LED, HIGH);
@@ -196,12 +202,3 @@ void Hardware::setDefaultPinModesAndValues()
 	pinMode(SOIL_HUMIDITY, INPUT);
 	pinMode(PARTICLE, INPUT);
 }
-
-void Hardware::debounceReadings(double& variable, const double reading)
-{
-	if (reading > INITIAL_VALUE  && reading < 1024)
-	{
-		variable = reading;
-	}
-}
-
