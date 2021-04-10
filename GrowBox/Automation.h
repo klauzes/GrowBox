@@ -38,9 +38,12 @@ private:
 	int m_Temperature;
 	int m_maxAirHumidity;
 	int m_idealSoilHumidity;
+	unsigned long m_lastSoilHumidityCheck = 0;
+	unsigned long m_nextLogWrite = 0;
+	void writeLog();
 
 	bool determineLightsState();
 	bool determineAirHumidityState();
 	bool determineAirTemperature();
-
+	bool determineSoilHumidity();
 };

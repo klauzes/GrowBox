@@ -51,6 +51,7 @@ private:
 	static void setSoundSettingsMenuItem(int val);
 	static void setSoundSettings(int val);
 
+	static void setPrepareManualControl(int val);
 	static void setManualControlMenuItem(int val);
 	static void manualToggles(int val);
 	static void manualReadings(int val);

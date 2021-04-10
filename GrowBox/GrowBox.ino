@@ -4,6 +4,7 @@
 #include "Hardware.h"
 #include <Arduino.h>
 #include "Automation.h"
+#include "Log.h"
 
 #define REAL_MODE;
 
@@ -34,6 +35,8 @@ void setup()
         currentConfig = nullptr;
     }
 #endif  	
+    //Log("Requested Air Temperature, Requested Air Humidity, Requested Soil Humidity, Actual Air Temperature, Actual Air Humidity, Actual Soil Humidity, Actual Particle Count, Lights State, Fan State, Heater State", true, true);
+    Serial.println("Requested Air Temperature, Requested Air Humidity, Requested Soil Humidity, Actual Air Temperature, Actual Air Humidity, Actual Soil Humidity, Actual Particle Count, Lights State, Fan State, Heater State");
 }
 
 void loop()
@@ -41,9 +44,9 @@ void loop()
 #ifdef REAL_MODE
     p_userInterface->processUserInterface();
     Automation* curentAutomation = p_userInterface->getProgram();   
-    if (curentAutomation != nullptr && curentAutomation->isValid() && (Hardware::getManualControl()!=true))
+    if (!Hardware::getManualControl() && curentAutomation != nullptr && curentAutomation->isValid())
         curentAutomation->doRoutine();
-    else
+    else if (!Hardware::getManualControl())
         Hardware::setDefaultPinModesAndValues();
 #else
     tests();
@@ -53,9 +56,10 @@ void loop()
 
 void tests()
 {
+    Hardware::setDefaultPinModesAndValues();
     Hardware::setManualControl(true);
     Hardware::setLights(true);
-    delay(2000);
+    delay(5000);
     Hardware::setLights(false);
     delay(2000);
 }

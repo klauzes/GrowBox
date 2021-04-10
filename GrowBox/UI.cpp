@@ -56,7 +56,7 @@ void UI::firstMenuItemList(int val)
 	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
 	p_staticUI->p_currentMenu->addMenuItem(setClockMenuItem, "Clock settings");
 	p_staticUI->p_currentMenu->addMenuItem(setSoundSettingsMenuItem, "Sound settings");
-	p_staticUI->p_currentMenu->addMenuItem(setManualControlMenuItem, "Manual control");
+	p_staticUI->p_currentMenu->addMenuItem(setPrepareManualControl, "Manual control");
 	p_staticUI->p_currentMenu->addMenuItem(setAutomaticMode, "Automatic mode");
 	p_staticUI->p_currentMenu->addMenuItem(backToMainMenu, "Back");
 }
@@ -300,12 +300,17 @@ void UI::setSoundSettings(int val)
 #pragma endregion
 
 
+void UI::setPrepareManualControl(int val)
+{
+	Hardware::setManualControl(true);//Manual control overrides automation
+	Hardware::setDefaultPinModesAndValues();
+	setManualControlMenuItem(0);
+}
+
 void UI::setManualControlMenuItem(int val)
 {
-	prepareNewMenuEntry();
-	Hardware::setManualControl(true);//Manual control overrides automation
+	prepareNewMenuEntry();	
 	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
-
 	char lightStateBuf[11];
 	char fanStateBuf[8];
 	char heatStateBuf[9];
@@ -375,7 +380,7 @@ void UI::manualReadings(int val)
 			p_staticUI->p_currentMenu->addMenuItem(setManualControlMenuItem, "x");
 			break;
 		case 8://water level
-			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_display, SensorMenu::Sensor::WaterLevel, 1024, 0);
+			p_staticUI->p_currentMenu = new SensorMenu(p_staticUI->p_display, SensorMenu::Sensor::WaterLevel, 100, 0);
 			p_staticUI->p_currentMenu->addMenuItem(setManualControlMenuItem, "x");
 			break;
 	}

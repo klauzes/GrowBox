@@ -49,7 +49,7 @@ void Log::printLn(const char* info)
 			logFile.seek(EOF);
 			if (logHour) {
 				logFile.print(lineTime);
-				logFile.print(" -> ");
+				logFile.print(",");
 			}
 			logFile.println(info);
 			logFile.close();

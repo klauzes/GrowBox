@@ -45,13 +45,27 @@ double Hardware::getHumidity()
 
 double Hardware::getWaterLevel()
 {
-	m_waterLevel = analogRead(WATER_LVL);
+	int sensorValue = analogRead(WATER_LVL);
+	if (sensorValue >= MAX_ADC_WATER_LEVEL)
+		sensorValue = MAX_ADC_WATER_LEVEL;
+	if (sensorValue <= MIN_ADC_WATER_LEVEL)
+		sensorValue = MIN_ADC_WATER_LEVEL;
+	
+	//m_waterLevel = analogRead(WATER_LVL);
+	m_waterLevel = map(sensorValue, MIN_ADC_WATER_LEVEL, MAX_ADC_WATER_LEVEL, 0, 100);
 	return m_waterLevel;
 }
 
 double Hardware::getSoilHumidity()
 {
-	m_soilHumidity = 1023 - analogRead(SOIL_HUMIDITY);
+	int sensorValue =1023 - analogRead(SOIL_HUMIDITY);
+	if (sensorValue <= 0)
+		sensorValue = 0;
+	if (sensorValue >= MAX_ADC_SOIL_HUMIDITY)
+		sensorValue = MAX_ADC_SOIL_HUMIDITY;
+
+	//m_soilHumidity = 1023 - analogRead(SOIL_HUMIDITY);
+	m_soilHumidity = map(sensorValue, 0, MAX_ADC_SOIL_HUMIDITY, 0, 100);
 	return m_soilHumidity;
 }
 
@@ -102,19 +116,17 @@ void Hardware::setIntakeFan(bool state)
 
 void Hardware::setHeater(bool state)
 {
-	Serial.print("setHeater"); Serial.println(state);
-	Serial.print("m_heaterLastChange"); Serial.println(m_heaterLastChange);
-	Serial.print("getManualControl()"); Serial.println(getManualControl());
-	Serial.print("millis()"); Serial.println(millis());
-	Serial.print("m_heaterState"); Serial.println(m_heaterState);
+	//Serial.print("setHeater"); Serial.println(state);
+	//Serial.print("m_heaterLastChange"); Serial.println(m_heaterLastChange);
+	//Serial.print("getManualControl()"); Serial.println(getManualControl());
+	//Serial.print("millis()"); Serial.println(millis());
+	//Serial.print("m_heaterState"); Serial.println(m_heaterState);
 	//Serial.print("DEFAULT_RELAY_DEBOUNCE"); Serial.println(DEFAULT_RELAY_DEBOUNCE);
 	if (millis() > m_heaterLastChange || getManualControl())
-	{		
-		Serial.println("insideIF");
+	{	
 		if (state == m_heaterState)
 			return;
-		digitalWrite(RELAY_HEATER, state);
-		Serial.println("wroteState");
+		digitalWrite(RELAY_HEATER, state);	
 		m_heaterState = state;
 		if (state) //heater always turns fan On
 		{			
