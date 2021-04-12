@@ -10,7 +10,7 @@
 
 #ifdef REAL_MODE
 UI* p_userInterface = nullptr;
-Automation* currentConfig = new Automation();
+Automation* currentConfig = nullptr;
 #endif // REAL_MODE
 
 
@@ -22,7 +22,7 @@ void setup()
     Hardware::setDefaultPinModesAndValues();
 
 #ifdef REAL_MODE
-    currentConfig->loadPersistent();      
+    currentConfig = new Automation(true);  
     Joystick::constructor(DEFAULT_ENCODER_SENSITIVITY);  
     if (currentConfig->isValid())
     {
@@ -34,9 +34,11 @@ void setup()
         delete currentConfig;
         currentConfig = nullptr;
     }
-#endif  	
-    //Log("Requested Air Temperature, Requested Air Humidity, Requested Soil Humidity, Actual Air Temperature, Actual Air Humidity, Actual Soil Humidity, Actual Particle Count, Lights State, Fan State, Heater State", true, true);
-    Serial.println("Requested Air Temperature, Requested Air Humidity, Requested Soil Humidity, Actual Air Temperature, Actual Air Humidity, Actual Soil Humidity, Actual Particle Count, Lights State, Fan State, Heater State");
+#endif  
+    for (int i = 1 ; i < 255; i++)
+    {
+        Beeper::beep(i, 1);
+    }
 }
 
 void loop()
@@ -56,10 +58,13 @@ void loop()
 
 void tests()
 {
-    Hardware::setDefaultPinModesAndValues();
+    Log("abc", true, true);
+    delay(5000);
+    Serial.println(Log::hasCard());
+   /* Hardware::setDefaultPinModesAndValues();
     Hardware::setManualControl(true);
     Hardware::setLights(true);
     delay(5000);
     Hardware::setLights(false);
-    delay(2000);
+    delay(2000);*/
 }

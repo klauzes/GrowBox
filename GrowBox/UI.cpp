@@ -469,7 +469,7 @@ void UI::setAirMaxHumidityMenuItem(int val)
 	p_staticUI->p_currentMenu->setFont(u8g_font_7x13);
 	for (int i = MIN_AIR_HUMIDITY; i < MAX_AIR_HUMIDITY; i++) {
 		char fAirTemp[5];
-		sprintf(fAirTemp, "%d %", i);
+		sprintf(fAirTemp, "%d %%", i);
 		p_staticUI->p_currentMenu->addMenuItem(setAirMax, fAirTemp);
 	}
 	p_staticUI->p_currentMenu->addMenuItem(setAutomaticMode, "Back");
@@ -487,9 +487,9 @@ void UI::setSoilHumidityMenuItem(int val)
 	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
 	p_staticUI->p_currentMenu->setFont(u8g_font_7x13);
 	for (int i = MIN_SOIL_HUMIDITY; i < MAX_SOIL_HUMIDITY; i++) {
-		char fAirTemp[5];
-		sprintf(fAirTemp, "%d %", i);
-		p_staticUI->p_currentMenu->addMenuItem(setSoilHumidity, fAirTemp);
+		char fSoilHumidity[5];
+		sprintf(fSoilHumidity, "%d %%", i);
+		p_staticUI->p_currentMenu->addMenuItem(setSoilHumidity, fSoilHumidity);
 	}
 	p_staticUI->p_currentMenu->addMenuItem(setAutomaticMode, "Back");
 }

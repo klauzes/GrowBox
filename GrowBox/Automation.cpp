@@ -1,21 +1,31 @@
 #include "Automation.h"
 #include "PersistentData.h"
-#include "DateTime.h"
 #include "Hardware.h"
 #include "Log.h"
 
-Automation::Automation(bool getPersistent) :
-m_suriseHour{ 0 },
+Automation::Automation():
+m_suriseHour {	0},
 m_sunlightHours{ 0 },
 m_Temperature{ 0 },
 m_maxAirHumidity{ 0 },
-m_idealSoilHumidity{ 0 }
+m_idealSoilHumidity{ 0 },
+m_lastSoilHumidityCheck { 0 },
+m_nextLogWrite { 0 },
+m_waterPumpOffTime { 0 }
 {
-	if (getPersistent)
-		loadPersistent();
+	nextHeaderDateTime = new DateTime(true);
+	nextHeaderDateTime.setHour(0);
+	nextHeaderDateTime.setMinute(0);
+	nextHeaderDateTime.setSecond(0);
 }
 
-Automation::Automation(const Automation& cpy)
+Automation::Automation(bool getPersistent) :Automation()
+{
+	if (getPersistent)
+		loadPersistent();	
+}
+
+Automation::Automation(const Automation& cpy):Automation()
 {
 	m_suriseHour = cpy.m_suriseHour;
 	m_sunlightHours = cpy.m_sunlightHours;
@@ -123,24 +133,43 @@ void Automation::doRoutine()
 	Hardware::setHeater(automationHeaterState);
 	Hardware::setIntakeFan(automationAirIntakeFanState);
 	Hardware::setWaterPump(automationWaterPump);
-	if (automationWaterPump)
+
+	if (automationWaterPump && m_waterPumpOffTime == 0)
+	{	
+		Hardware::setWaterPump(true);
+		m_waterPumpOffTime = millis() + DEFAULT_WATER_PUMP_ON_TIME;
+	}
+
+	if (millis() > m_waterPumpOffTime)
 	{
-		delay(20000);
 		Hardware::setWaterPump(false);
+		m_waterPumpOffTime = 0;
 	}
 }
 
 void Automation::writeLog()
 {
-	if (millis() > m_nextLogWrite)
+	if (!Log::hasCard())
+		Log("TryStart", true, true);
+	if (millis() > m_nextLogWrite && Log::hasCard())
 	{
+		m_nextLogWrite += DEFAULT_LOG_WRITE_INTERVAL;
+		DateTime today(true);
+		today.setHour(0); today.setMinute(0); today.setSecond(0);
+	
+		if (nextHeaderDateTime == today)
+		{
+			nextHeaderDateTime.addDay(1);		
+			Log("Requested Air Temperature, Max Air Humidity, Requested Soil Humidity, Actual Air Temperature, Actual Air Humidity, Actual Soil Humidity, Actual Particle Count, Lights State, Fan State, Heater State", true, true);
+		}
+
 		int reqAirTemp = 0; PersistentData::getTemperature(reqAirTemp);
 		int reqAirHumidiy = 0; PersistentData::getMaximumAirHumidity(reqAirHumidiy);
 		int reqSoilHumidity = 0; PersistentData::getIdealSoilHumidity(reqSoilHumidity);
 
 		double actualAirTemp = Hardware::getTemperature();
 		double actualAirHumidity = Hardware::getHumidity();
-		double actualSoilHumidity = Hardware::getHumidity();
+		double actualSoilHumidity = Hardware::getSoilHumidity();
 		double actualParticleCount = Hardware::getParticleCount();
 
 		bool actualLightState = Hardware::getLightsState();
@@ -149,21 +178,18 @@ void Automation::writeLog()
 
 
 		char strReqAirTemp[7];  dtostrf(reqAirTemp, 2, 2, strReqAirTemp);
-		char strRreqAirHumidiy[7];  dtostrf(reqAirHumidiy, 2, 2, strRreqAirHumidiy);
+		char strReqAirHumidiy[7];  dtostrf(reqAirHumidiy, 2, 2, strReqAirHumidiy);
 		char strReqSoilHumidity[7];  dtostrf(reqSoilHumidity, 2, 2, strReqSoilHumidity);
 
 		char strActualAirTemp[7];  dtostrf(actualAirTemp, 2, 2, strActualAirTemp);
 		char strActualAirHumidity[7];  dtostrf(actualAirHumidity, 2, 2, strActualAirHumidity);
 		char strActualSoilHumidity[7];  dtostrf(actualSoilHumidity, 2, 2, strActualSoilHumidity);
 		char strActualParticleCount[7];  dtostrf(actualParticleCount, 2, 2, strActualParticleCount);
-
-		//Requested Air Temperature, Requested Air Humidity, Requested Soil Humidity, Actual Air Temperature, Actual Air Humidity, Actual Soil Humidity, Actual Particle Count, Lights State, Fan State, Heater State
+		
 		char buffer[100];
-		sprintf(buffer, "%s,%s,%s,%s,%s,%s,%s,%d,%d,%d", strReqAirTemp, strRreqAirHumidiy, strReqSoilHumidity, strActualAirTemp,
+		sprintf(buffer, "%s,%s,%s,%s,%s,%s,%s,%d,%d,%d", strReqAirTemp, strReqAirHumidiy, strReqSoilHumidity, strActualAirTemp,
 			strActualAirHumidity, strActualSoilHumidity, strActualParticleCount, actualLightState, actualFanState, actualHeaterState);
-		//Log(buffer, true, true);
-		Serial.println(buffer);
-		m_nextLogWrite += LOG_WRITE_INTERVAL;
+		Log(buffer, true, true);		
 	}
 }
 
@@ -192,7 +218,10 @@ bool Automation::determineAirHumidityState()
 	int currentAirHumidity = Hardware::getHumidity();
 	int maxAirHumidity; PersistentData::getMaximumAirHumidity(maxAirHumidity);
 	int cmaxIdealTemperature; PersistentData::getTemperature(cmaxIdealTemperature);
-	if (currentAirHumidity > maxAirHumidity && !determineAirTemperature() || (Hardware::getTemperature() > cmaxIdealTemperature) )
+	if (
+		currentAirHumidity > maxAirHumidity && !determineAirTemperature() ||
+		(Hardware::getTemperature() > cmaxIdealTemperature && Hardware::getLightsState()) 
+		)
 		return true;
 	return false;
 }
@@ -211,7 +240,7 @@ bool Automation::determineSoilHumidity()
 	int idealSoil; PersistentData::getIdealSoilHumidity(idealSoil);
 	if (Hardware::getSoilHumidity() < idealSoil && m_lastSoilHumidityCheck < millis() )
 	{		
-		m_lastSoilHumidityCheck = millis() + SOIL_HUMIDITY_CHECK_INTERVAL;
+		m_lastSoilHumidityCheck = millis() + DEFAULT_SOIL_HUMIDITY_CHECK_INTERVAL;
 		return true;
 	}
 	return false;

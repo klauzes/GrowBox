@@ -9,9 +9,10 @@ public:
 	void setDaily(bool state);
 	void setHour(bool state);
 	void printLn(const char* info);
+	static bool hasCard();
 
 private:
-	const char* logName = "Sera.log";
+	const char* logName = "Sera.csv";
 	bool isDaily;
 	bool logHour; 
 	bool initSD();

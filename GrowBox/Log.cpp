@@ -1,16 +1,21 @@
-#include "log.h"
+#include "Log.h"
 #include <SPI.h>
 #include "DateTime.h"
 #include <SD.h>
+#include <Arduino.h>
+
 static bool hasInit = false;
+static bool hasTryInit = false;
 
 Log::Log(const char* info, bool isDailyState , bool logsHoursState )
 {
 	isDaily = isDailyState;
 	logHour = logsHoursState;
-	if (!hasInit)		
+	if (!hasInit)
 		hasInit = initSD();
-	printLn(info);	
+	if(hasInit && hasTryInit)
+		printLn(info);	
+	Serial.print("hasInit:"); Serial.println(hasInit);
 }
 
 
@@ -37,7 +42,7 @@ void Log::printLn(const char* info)
 			strcpy(lineTime, buf);
 			char fd[2]; curTime.formatedDate(fd);
 			char fm[2]; curTime.formatedMonth(fm);
-			sprintf(fName, "%s%s.log", fd, fm);
+			sprintf(fName, "%s%s.csv", fd, fm);
 		}
 		else
 		{
@@ -46,8 +51,9 @@ void Log::printLn(const char* info)
 		File logFile = SD.open(fName, FILE_WRITE);
 		if (logFile)
 		{
-			logFile.seek(EOF);
-			if (logHour) {
+			logFile.seek(EOF);			
+			if (logHour)
+			{
 				logFile.print(lineTime);
 				logFile.print(",");
 			}
@@ -57,7 +63,13 @@ void Log::printLn(const char* info)
 	}	
 }
 
+bool Log::hasCard()
+{
+	return hasInit;
+}
+
 bool Log::initSD()
 {
+	hasTryInit = true;
 	return SD.begin(SD_CS);
 }

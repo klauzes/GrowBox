@@ -1,11 +1,13 @@
 #pragma once
 #include <Arduino.h>
 #include "Pins.h"
+#include "DateTime.h"
 
 class Automation
 {
 public:
-	Automation(bool getPersistent = false);
+	Automation();
+	Automation(bool getPersistent);
 	Automation(const Automation& cpy);
 	~Automation();
 
@@ -38,9 +40,11 @@ private:
 	int m_Temperature;
 	int m_maxAirHumidity;
 	int m_idealSoilHumidity;
-	unsigned long m_lastSoilHumidityCheck = 0;
-	unsigned long m_nextLogWrite = 0;
+	unsigned long m_lastSoilHumidityCheck;
+	unsigned long m_nextLogWrite;
+	unsigned long m_waterPumpOffTime;
 	void writeLog();
+	DateTime nextHeaderDateTime;
 
 	bool determineLightsState();
 	bool determineAirHumidityState();
