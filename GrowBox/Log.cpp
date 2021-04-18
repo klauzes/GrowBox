@@ -15,7 +15,6 @@ Log::Log(const char* info, bool isDailyState , bool logsHoursState )
 		hasInit = initSD();
 	if(hasInit && hasTryInit)
 		printLn(info);	
-	Serial.print("hasInit:"); Serial.println(hasInit);
 }
 
 

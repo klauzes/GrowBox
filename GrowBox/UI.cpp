@@ -429,7 +429,7 @@ void UI::setSunlightHoursMenuItem(int val)
 	prepareNewMenuEntry();
 	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
 	p_staticUI->p_currentMenu->setFont(u8g_font_7x13);
-	for (int i = 1; i < MAX_SUNLIGHT_HOURS; i++) {
+	for (int i = 1; i <= MAX_SUNLIGHT_HOURS; i++) {
 		char fDlightHours[6];
 		sprintf(fDlightHours, i < 10 ? "0%d:00" : "%d:00", i);
 		p_staticUI->p_currentMenu->addMenuItem(setSunlightHours, fDlightHours);
@@ -448,7 +448,7 @@ void UI::setAirTemperatureMenuItem(int val)
 	prepareNewMenuEntry();
 	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
 	p_staticUI->p_currentMenu->setFont(u8g_font_7x13);
-	for (int i = MIN_AIR_TEMP; i < MAX_AIR_TEMP; i++) {
+	for (int i = MIN_AIR_TEMP; i <= MAX_AIR_TEMP; i++) {
 		char fAirTemp[11];
 		sprintf(fAirTemp, "%d Celsius", i);
 		p_staticUI->p_currentMenu->addMenuItem(setAirTemperature, fAirTemp);
@@ -467,7 +467,7 @@ void UI::setAirMaxHumidityMenuItem(int val)
 	prepareNewMenuEntry();
 	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
 	p_staticUI->p_currentMenu->setFont(u8g_font_7x13);
-	for (int i = MIN_AIR_HUMIDITY; i < MAX_AIR_HUMIDITY; i++) {
+	for (int i = MIN_AIR_HUMIDITY; i <= MAX_AIR_HUMIDITY; i++) {
 		char fAirTemp[5];
 		sprintf(fAirTemp, "%d %%", i);
 		p_staticUI->p_currentMenu->addMenuItem(setAirMax, fAirTemp);
@@ -486,7 +486,7 @@ void UI::setSoilHumidityMenuItem(int val)
 	prepareNewMenuEntry();
 	p_staticUI->p_currentMenu = new NavigationMenu(p_staticUI->p_display);
 	p_staticUI->p_currentMenu->setFont(u8g_font_7x13);
-	for (int i = MIN_SOIL_HUMIDITY; i < MAX_SOIL_HUMIDITY; i++) {
+	for (int i = MIN_SOIL_HUMIDITY; i <= MAX_SOIL_HUMIDITY; i++) {
 		char fSoilHumidity[5];
 		sprintf(fSoilHumidity, "%d %%", i);
 		p_staticUI->p_currentMenu->addMenuItem(setSoilHumidity, fSoilHumidity);

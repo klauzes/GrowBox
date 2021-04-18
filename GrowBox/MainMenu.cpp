@@ -76,7 +76,7 @@ void MainMenu::doMenu()
 			p_display->setFont(u8g_font_7x13B);
 			p_display->drawStr(getHorizontalAllignement(7, 8), p_display->getFontLineSpacing() + 1, cTime);
 			p_display->drawStr(getHorizontalAllignement(7, 11), p_display->getFontLineSpacing() * 2 + 1, cDate);
-			p_display->drawLine(0, 27, MAXWIDTH, 27);
+			p_display->drawLine(0, 27, MAX_SCREEN_WIDTH, 27);
 			p_display->setFont(u8g_font_6x10r);
 			p_display->drawStr(0, p_display->getFontLineSpacing() * 4 + 1, airTempString);
 			p_display->drawStr(0, p_display->getFontLineSpacing() * 5 + 1, airHumidityString);
@@ -112,7 +112,7 @@ int MainMenu::getHorizontalAllignement(int fontSpacing, int numChars)
 {
 	int lineTotalPixels = numChars * fontSpacing;
 	int midPoint = lineTotalPixels / 2;
-	int screenMidPoint = MAXWIDTH / 2;
+	int screenMidPoint = MAX_SCREEN_WIDTH / 2;
 	return screenMidPoint - midPoint;
 }
 

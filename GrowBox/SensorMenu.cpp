@@ -68,7 +68,7 @@ void SensorMenu::doValuesAndGraph()
 	p_display->firstPage();
 	
 	do {
-		p_display->drawLine(0, MAXHEIGHT / 2, MAXWIDTH, MAXHEIGHT / 2);
+		p_display->drawLine(0, MAX_SCREEN_HEIGHT / 2, MAX_SCREEN_WIDTH, MAX_SCREEN_HEIGHT / 2);
 		p_display->setFont(u8g_font_6x10);
 		char minValStr[9];//1024.12
 		char maxValStr[9];//9 bytes in case of minus sign
@@ -87,7 +87,7 @@ void SensorMenu::doValuesAndGraph()
 		p_display->drawStr(0, p_display->getFontLineSpacing() * 3 + 1, strCur);
 		for (int i = 0; i < readingCount; i++)
 		{
-			p_display->drawLine(i, MAXHEIGHT, i, barAsPercentage(readings[i]));
+			p_display->drawLine(i, MAX_SCREEN_HEIGHT, i, barAsPercentage(readings[i]));
 		}
 	
 	} while (p_display->nextPage());
@@ -99,8 +99,8 @@ void SensorMenu::doValuesAndGraph()
 
 int SensorMenu::barAsPercentage(double val)
 {
-	int availableSpace = MAXHEIGHT / 2;
-	int asPercentage = map(val, minPossibleValue, maxPossibleValue, MAXHEIGHT, availableSpace);	
+	int availableSpace = MAX_SCREEN_HEIGHT / 2;
+	int asPercentage = map(val, minPossibleValue, maxPossibleValue, MAX_SCREEN_HEIGHT, availableSpace);	
 	return asPercentage <= availableSpace ? availableSpace : asPercentage; //if somehow measurements get larger than expected cap out to screen resolution
 }
 
@@ -116,18 +116,18 @@ void SensorMenu::processReading()
 
 void SensorMenu::addReadingToList()
 {
-	if (readingCount < MAXWIDTH)
+	if (readingCount < MAX_SCREEN_WIDTH)
 	{
 		readings[readingCount] = curValue;
-		if (readingCount < MAXWIDTH)
+		if (readingCount < MAX_SCREEN_WIDTH)
 			readingCount++;
 	}
 	else
 	{
-		for (int i = 0; i < MAXWIDTH - 1; i++)
+		for (int i = 0; i < MAX_SCREEN_WIDTH - 1; i++)
 		{
 			readings[i] = readings[i + 1];
 		}
-		readings[MAXWIDTH - 1] = curValue;
+		readings[MAX_SCREEN_WIDTH - 1] = curValue;
 	}
 }

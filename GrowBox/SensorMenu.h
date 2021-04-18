@@ -23,7 +23,7 @@ private:
 	double maxValue;
 	double curValue;
 	int readingCount;
-	double readings[MAXWIDTH+1];
+	double readings[MAX_SCREEN_WIDTH+1];
 	void addReadingToList();
 	void doValuesAndGraph();
 	int barAsPercentage(double val);

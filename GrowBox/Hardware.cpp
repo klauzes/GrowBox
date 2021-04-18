@@ -21,7 +21,6 @@ static double m_waterLevel = INITIAL_VALUE;
 static double m_soilHumidity = INITIAL_VALUE;
 static double m_particleCount = INITIAL_VALUE;
 
-static unsigned long m_waterPumpLastChange = 0;
 static unsigned long m_intakeFanLastChange = 0;
 static unsigned long m_heaterLastChange = 0;
 static unsigned long m_lightsLastChange = 0;
@@ -81,22 +80,16 @@ double Hardware::getParticleCount()
 	double dustDensity = 0.17 * calcVoltage - 0.1;
 	if (dustDensity < 0)
 		dustDensity = 0;	
-	analogWrite(PARTICLE_LED, 230);//pulse
-	//debounceReadings(m_particleCount, dustDensity);
+	analogWrite(PARTICLE_LED, 230);//pulse	
 	return dustDensity;
 }
 
 void Hardware::setWaterPump(bool state)
 {
-	if (millis() > m_waterPumpLastChange || getManualControl())
-	{
-		if (state == m_waterPumpState)
-			return;
-		digitalWrite(WATER_PUMP, state);
-		m_waterPumpState = state;
-		if (!getManualControl())
-			m_waterPumpLastChange = millis() + DEFAULT_RELAY_DEBOUNCE;
-	}	
+	if (state == m_waterPumpState)
+		return;
+	digitalWrite(WATER_PUMP, state);
+	m_waterPumpState = state;
 }
 
 void Hardware::setIntakeFan(bool state)
@@ -116,12 +109,6 @@ void Hardware::setIntakeFan(bool state)
 
 void Hardware::setHeater(bool state)
 {
-	//Serial.print("setHeater"); Serial.println(state);
-	//Serial.print("m_heaterLastChange"); Serial.println(m_heaterLastChange);
-	//Serial.print("getManualControl()"); Serial.println(getManualControl());
-	//Serial.print("millis()"); Serial.println(millis());
-	//Serial.print("m_heaterState"); Serial.println(m_heaterState);
-	//Serial.print("DEFAULT_RELAY_DEBOUNCE"); Serial.println(DEFAULT_RELAY_DEBOUNCE);
 	if (millis() > m_heaterLastChange || getManualControl())
 	{	
 		if (state == m_heaterState)

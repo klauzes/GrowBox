@@ -30,7 +30,7 @@ void NavigationMenu::doMenu()
 	p_display->firstPage();
 	do {	
 		int linePos = m_fontHeight;
-		p_display->drawBox(0, currentSelection * m_fontHeight + 1, MAXWIDTH, m_fontHeight);
+		p_display->drawBox(0, currentSelection * m_fontHeight + 1, MAX_SCREEN_WIDTH, m_fontHeight);
 		for (int i = m_menuStart; i < m_menuEnd; i++)
 		{
 			if (currentSelection == i- (m_maxMenuItemsInPage * m_currentPage))
@@ -53,6 +53,6 @@ void NavigationMenu::setFont(const u8g_fntpgm_uint8_t* font)
 	if (p_display)
 		p_display->setFont(font);
 	m_fontHeight = p_display->getFontLineSpacing();
-	m_maxMenuItemsInPage = MAXHEIGHT / m_fontHeight;
+	m_maxMenuItemsInPage = MAX_SCREEN_HEIGHT / m_fontHeight;
 }
 

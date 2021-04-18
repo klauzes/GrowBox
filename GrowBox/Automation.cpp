@@ -99,7 +99,7 @@ bool Automation::isValid()
 		{
 			if (m_idealSoilHumidity >= MIN_SOIL_HUMIDITY && m_idealSoilHumidity <= MAX_SOIL_HUMIDITY)
 			{
-				if (m_maxAirHumidity <= MAX_AIR_HUMIDITY)
+				if (m_maxAirHumidity >= MIN_AIR_HUMIDITY && m_maxAirHumidity <= MAX_AIR_HUMIDITY)
 				{
 					if (m_Temperature >= MIN_AIR_TEMP && m_Temperature <= MAX_AIR_TEMP)
 					{
@@ -131,8 +131,7 @@ void Automation::doRoutine()
 
 	Hardware::setLights(automationLightsState);
 	Hardware::setHeater(automationHeaterState);
-	Hardware::setIntakeFan(automationAirIntakeFanState);
-	Hardware::setWaterPump(automationWaterPump);
+	Hardware::setIntakeFan(automationAirIntakeFanState);	
 
 	if (automationWaterPump && m_waterPumpOffTime == 0)
 	{	
@@ -140,8 +139,8 @@ void Automation::doRoutine()
 		m_waterPumpOffTime = millis() + DEFAULT_WATER_PUMP_ON_TIME;
 	}
 
-	if (millis() > m_waterPumpOffTime)
-	{
+	if (millis() >= m_waterPumpOffTime)
+	{		
 		Hardware::setWaterPump(false);
 		m_waterPumpOffTime = 0;
 	}
@@ -160,7 +159,7 @@ void Automation::writeLog()
 		if (nextHeaderDateTime == today)
 		{
 			nextHeaderDateTime.addDay(1);		
-			Log("Requested Air Temperature, Max Air Humidity, Requested Soil Humidity, Actual Air Temperature, Actual Air Humidity, Actual Soil Humidity, Actual Particle Count, Lights State, Fan State, Heater State", true, true);
+			Log("Requested Air Temperature, Max Air Humidity, Requested Soil Humidity, Actual Air Temperature, Actual Air Humidity, Actual Soil Humidity, Actual Particle Count, Lights State, Fan State, Heater State, Water Pump State", true, true);
 		}
 
 		int reqAirTemp = 0; PersistentData::getTemperature(reqAirTemp);
@@ -175,6 +174,7 @@ void Automation::writeLog()
 		bool actualLightState = Hardware::getLightsState();
 		bool actualFanState = Hardware::getIntakeFanState();
 		bool actualHeaterState = Hardware::getHeaterState();
+		bool actualWaterPumpState = Hardware::getWaterPumpState();
 
 
 		char strReqAirTemp[7];  dtostrf(reqAirTemp, 2, 2, strReqAirTemp);
@@ -187,8 +187,8 @@ void Automation::writeLog()
 		char strActualParticleCount[7];  dtostrf(actualParticleCount, 2, 2, strActualParticleCount);
 		
 		char buffer[100];
-		sprintf(buffer, "%s,%s,%s,%s,%s,%s,%s,%d,%d,%d", strReqAirTemp, strReqAirHumidiy, strReqSoilHumidity, strActualAirTemp,
-			strActualAirHumidity, strActualSoilHumidity, strActualParticleCount, actualLightState, actualFanState, actualHeaterState);
+		sprintf(buffer, "%s,%s,%s,%s,%s,%s,%s,%d,%d,%d,%d", strReqAirTemp, strReqAirHumidiy, strReqSoilHumidity, strActualAirTemp,
+			strActualAirHumidity, strActualSoilHumidity, strActualParticleCount, actualLightState, actualFanState, actualHeaterState, actualWaterPumpState);
 		Log(buffer, true, true);		
 	}
 }
@@ -238,7 +238,7 @@ bool Automation::determineAirTemperature()
 bool Automation::determineSoilHumidity()
 {
 	int idealSoil; PersistentData::getIdealSoilHumidity(idealSoil);
-	if (Hardware::getSoilHumidity() < idealSoil && m_lastSoilHumidityCheck < millis() )
+	if (Hardware::getSoilHumidity() < idealSoil && m_lastSoilHumidityCheck <= millis() )
 	{		
 		m_lastSoilHumidityCheck = millis() + DEFAULT_SOIL_HUMIDITY_CHECK_INTERVAL;
 		return true;
