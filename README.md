@@ -5,8 +5,3 @@
 # Requires the use of 3rd party Visual Studio Extension from https://www.visualmicro.com/
 # Visual Micro is not free, but it does have a 30 day trial. More info on their site.
 #
-# Work in Progress
-# To Do:
-# -Add Schematics
-# -Add Renderings
-# -Finish the code :-) 
