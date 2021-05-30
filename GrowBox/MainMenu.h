@@ -1,3 +1,13 @@
+/****************************************************************************
+*  PROIECT LICENTA:     -SISTEM ELECTRONIC PENTRU AUTOMATIZAREA UNEI SERE-  *
+*  LIMBAJ:              C++                                                 *
+*  MICROPROCESOR        ATmega2560                                          *
+*  STUDENT:             ISPAS N.O. CLAUDIU-OCTAVIAN                         *
+*  GRUPA:               307                                                 *
+*  PROMOTIA             2018-2021                                           *
+*  FACULTATEA DE INFORMATICA                                                *
+*  UNIVERSITATEA TITU MAIORESCU                                             *
+* ***************************************************************************/
 #pragma once
 #include "Menu.h"
 
@@ -9,6 +19,6 @@ public:
 
 private:
 	int getHorizontalAllignement(int fontSpacing,int numChars);
-	unsigned long nextScreenTime = 0;
-	bool screenOneOrTwo;
+	unsigned long m_nextScreenTime = 0;
+	bool m_screenOneOrTwo;
 };

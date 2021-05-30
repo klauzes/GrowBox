@@ -1,3 +1,13 @@
+/****************************************************************************
+*  PROIECT LICENTA:     -SISTEM ELECTRONIC PENTRU AUTOMATIZAREA UNEI SERE-  *
+*  LIMBAJ:              C++                                                 *
+*  MICROPROCESOR        ATmega2560                                          *
+*  STUDENT:             ISPAS N.O. CLAUDIU-OCTAVIAN                         *
+*  GRUPA:               307                                                 *
+*  PROMOTIA             2018-2021                                           *
+*  FACULTATEA DE INFORMATICA                                                *
+*  UNIVERSITATEA TITU MAIORESCU                                             *
+* ***************************************************************************/
 #pragma once
 #include "Menu.h"
 
@@ -18,16 +28,17 @@ public:
 	void doMenu() override;
 
 private:
-	Sensor sensorType;	
-	double minValue;
-	double maxValue;
-	double curValue;
-	int readingCount;
-	double readings[MAX_SCREEN_WIDTH+1];
+	Sensor m_sensorType;	
+	double m_minValue;
+	double m_maxValue;
+	double m_curValue;
+	int m_readingCount;
+	double m_readings[MAX_SCREEN_WIDTH+1];
+	int m_maxPossibleValue;
+	int m_minPossibleValue;
+
 	void addReadingToList();
 	void doValuesAndGraph();
 	int barAsPercentage(double val);
-	int maxPossibleValue;
-	int minPossibleValue;
 	void processReading();	
 };

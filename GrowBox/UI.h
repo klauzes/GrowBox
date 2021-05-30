@@ -1,3 +1,13 @@
+/****************************************************************************
+*  PROIECT LICENTA:     -SISTEM ELECTRONIC PENTRU AUTOMATIZAREA UNEI SERE-  *
+*  LIMBAJ:              C++                                                 *
+*  MICROPROCESOR        ATmega2560                                          *
+*  STUDENT:             ISPAS N.O. CLAUDIU-OCTAVIAN                         *
+*  GRUPA:               307                                                 *
+*  PROMOTIA             2018-2021                                           *
+*  FACULTATEA DE INFORMATICA                                                *
+*  UNIVERSITATEA TITU MAIORESCU                                             *
+* ***************************************************************************/
 #pragma once
 #include "Automation.h"
 #include "Joystick.h"
@@ -29,7 +39,7 @@ private:
 	Automation* p_automationProgram;
 	DateTime  m_menuTimeOut;	
 	void createMainMenu();
-	static void firstMenuItemList(int val);
+	static void mainMenuItemList(int val);
 	static void backToMainMenu(int val);
 
 	static void setClockMenuItem(int val);
@@ -57,6 +67,7 @@ private:
 	static void manualReadings(int val);
 
 	static void setAutomaticMode(int val);
+	static void setBackFromAutomaticMode(int val);
 	static void setSunriseHourMenuItem(int val);
 	static void setSunriseHour(int val);
 	static void setSunlightHoursMenuItem(int val);

@@ -1,6 +1,11 @@
 #include "PersistentData.h"
 #include <EEPROM.h>
 
+/*
+* Aceasta clasa este folosita pentru a scrie si a citi valori din memoria non-volatila EEPROM.
+* Folosim acest timp de stocare pentru a persista setarile facute de utilizator chiar si atunci cand alimentare este intrerupta
+*/
+
 void PersistentData::setVolume(int val)
 {
 	EEPROM.write(speakervalumeAddress, val);

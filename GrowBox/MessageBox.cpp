@@ -1,7 +1,12 @@
 #include "MessageBox.h"
-#include  "Joystick.h"
+#include "Joystick.h"
 
+/*
+* Aceasta este o clasa derivata din Menu si descrie modul de functionare a unui ecran de informare
+* Putem considera prin analogie cu MessageBox din Windows.
+*/
 
+//
 MessageBox::MessageBox(U8GLIB_ST7920_128X64_4X* disp, const char* title, const char* message1, const char* message2)
 {
 	p_display = disp;

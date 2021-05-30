@@ -1,7 +1,12 @@
-#include "NavigationMenu.h"
-#include "Arduino.h"
-#include "Joystick.h"
+#include <Arduino.h>
 
+#include "NavigationMenu.h"
+#include "Joystick.h"
+/*
+* Aceasta este o clasa derivata din Menu si poate lua forma oricarui meniu cu cu elemente derulante
+* Defileaza ecran cu eran, prin toate elementele meniului iar in momentul selectarii unei intrari
+* Cheama functia statica prin pointer ce corespunde acelui meniu
+*/
 NavigationMenu::NavigationMenu(U8GLIB_ST7920_128X64_4X* dsp )
 {
 	p_display = dsp;	

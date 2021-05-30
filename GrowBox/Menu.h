@@ -1,8 +1,18 @@
+/****************************************************************************
+*  PROIECT LICENTA:     -SISTEM ELECTRONIC PENTRU AUTOMATIZAREA UNEI SERE-  *
+*  LIMBAJ:              C++                                                 *
+*  MICROPROCESOR        ATmega2560                                          *
+*  STUDENT:             ISPAS N.O. CLAUDIU-OCTAVIAN                         *
+*  GRUPA:               307                                                 *
+*  PROMOTIA             2018-2021                                           *
+*  FACULTATEA DE INFORMATICA                                                *
+*  UNIVERSITATEA TITU MAIORESCU                                             *
+* ***************************************************************************/
 #pragma once
-#include "Joystick.h"
 #include <U8glib.h>
-#include "Pins.h"
 #include "Beeper.h"
+#include "Joystick.h"
+#include "Pins.h"
 class UI; 
 
 class Menu

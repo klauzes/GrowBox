@@ -1,20 +1,28 @@
-#include "MainMenu.h"
 #include "DateTime.h"
 #include "Hardware.h"
 #include "Joystick.h"
 #include "Log.h"
+#include "MainMenu.h"
 
+/*
+* Aceasta este o clasa derivata din Menu si descrie modul de functionare a ecranului principal
+* Ecranul cu care suntem intampinati dupa ce sistemul este alimentat.
+*/
+
+// Constructor
 MainMenu::MainMenu( U8GLIB_ST7920_128X64_4X* disp)
 {
 	p_display = disp;	
 	Joystick::setMinMax(0, 0);
 	Joystick::reset();
-	setFont(u8g_font_9x18);//default font
+	setFont(u8g_font_9x18);
 	doesNotTimeOut = true;
-	nextScreenTime = millis() + DEFAULT_MAIN_SCREEN_NEXT_PAGE;
-	screenOneOrTwo = true;
+	m_nextScreenTime = millis() + DEFAULT_MAIN_SCREEN_NEXT_PAGE;
+	m_screenOneOrTwo = true;
 }
 
+
+// Implementarea metodei virtuale doMenu specifica ecranului principal.
 void MainMenu::doMenu()
 {
 	p_display->setFont(u8g_font_6x10);
@@ -24,6 +32,7 @@ void MainMenu::doMenu()
 	char cTime[9]; curTime.cTime(cTime);
 	char cDate[12]; curTime.cDate(cDate);
 
+	//citirea informatilor ce vor fi afisate pe ecran
 	double airTemp = Hardware::getTemperature();
 	double airHumidity = Hardware::getHumidity();
 	double soilHumidity = Hardware::getSoilHumidity();
@@ -51,7 +60,7 @@ void MainMenu::doMenu()
 
 	dtostrf(particleCount, 2, 2, bugParticleCount);
 
-
+	//Formatarea stringurilo asa cum vor aparea pe ecran
 	char airTempString[30]; sprintf(airTempString,				"Air  Temp.   :%s C", bufAirTemp);
 	char airHumidityString[30]; sprintf(airHumidityString,		"Air  Humidity:%s%%", bufAirHumidity);
 	char soilHumidityString[30]; sprintf(soilHumidityString,	"Soil Humidity:%s%%", bufSoilHumidity);
@@ -64,13 +73,16 @@ void MainMenu::doMenu()
 	char waterPumpStateString[30]; sprintf(waterPumpStateString,"Water Pump:%s", waterPumpState ? on:off);
 	char sdCardStateString[30]; sprintf(sdCardStateString,		"SD Card   :%s", cardState ? on:off);
 
-	if (millis() > nextScreenTime)
+	// Din cauza volumui mare de informatii ce nu incape pe un singur ecran simultan
+	// Acest meniu baleiaza intre doua ecrane cu o frecventa de DEFAULT_MAIN_SCREEN_NEXT_PAGE
+	if (millis() > m_nextScreenTime)
 	{
-		screenOneOrTwo = !screenOneOrTwo;
-		nextScreenTime = millis() + DEFAULT_MAIN_SCREEN_NEXT_PAGE;
+		m_screenOneOrTwo = !m_screenOneOrTwo;
+		m_nextScreenTime = millis() + DEFAULT_MAIN_SCREEN_NEXT_PAGE;
 	}
 
-	if (screenOneOrTwo) 
+	// Afisare ecranul 1
+	if (m_screenOneOrTwo) 
 	{
 		do {
 			p_display->setFont(u8g_font_7x13B);
@@ -84,7 +96,7 @@ void MainMenu::doMenu()
 			p_display->drawStr(0, p_display->getFontLineSpacing() * 7 + 1, waterLevelString);
 		} while (p_display->nextPage());
 	}
-	else
+	else // Afisare Ecranul 2
 	{
 		do {	
 			p_display->setFont(u8g_font_6x10r);
@@ -108,6 +120,8 @@ void MainMenu::doMenu()
 	
 }
 
+
+//Metoda privata specifica acestui tip de meniu. Helper method
 int MainMenu::getHorizontalAllignement(int fontSpacing, int numChars)
 {
 	int lineTotalPixels = numChars * fontSpacing;

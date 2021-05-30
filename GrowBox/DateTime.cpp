@@ -1,12 +1,21 @@
 #include "DateTime.h"
-#include <Arduino.h>
+
+
+/*
+* Aceasta clasa este utilizata pentru a efectua calcule ce tin de durate de timp.
+* Are si overload pe operatorii logici <,>,<=,>= si = , ceea ce permite determinarea relatie dintre doua instante create la momente diferite in timp.
+* Oferi si metode helper si pot intoarce sub forma unui sir C ora si data in diferite tipuri de formatare.
+*/
+
+// Constante pentru stringurile formatate
 const static char* months[] = { "---", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul","Aug","Sep","Oct","Nov","Dec" };
 const static char* weekdays[] = { "---", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
 
+// Constructori, distructori si supraincarcare de operatori
 DateTime::DateTime(bool _now = false)
 {
 	if (!rtcInstance.isRunning())
-		rtcInstance.control(0, DS1307_ON);//also check if 12h day and set to 24h day
+		rtcInstance.control(0, DS1307_ON);
 	h = m = s = mm = yyyy= 0;
 	d  = dow = 1;
 	if (_now)
@@ -108,6 +117,7 @@ bool operator<=(const DateTime d1, const DateTime d2)
 	return false;
 }
 
+// Ora curenta formatata in forma OO:MM:SS
 void DateTime::cTime(char* val)
 {
 	char fh[3]; formatedHour(fh);
@@ -116,6 +126,7 @@ void DateTime::cTime(char* val)
 	sprintf(val, "%.2s:%.2s:%.2s", fh, fm, fs);
 }
 
+// Data curenta formata in DATA-LUNA-AN
 void DateTime::cDate(char* val)
 {
 	char fd[3]; formatedDate(fd);
@@ -123,11 +134,13 @@ void DateTime::cDate(char* val)
 	int x = sprintf(val, "%.2s-%.3s-%.4i", fd, fmt, yyyy);
 }
 
+// Formateaza valori numerice cu 0 in fata pentru a pastra o lungime constanta a sirului
 void DateTime::formatDecimal(int num, char* val)
 {
 	sprintf(val, num < 10 ? "0%.1i" : "%.2i", num);
 }
 
+// Salveaza valorile membrilor din instanta in dispozitivul hardware RealTimeClock atasat la Arduino
 void DateTime::save2RTC()
 {
 	rtcInstance.h = h;
@@ -140,6 +153,7 @@ void DateTime::save2RTC()
 	rtcInstance.writeTime();
 }
 
+// Transcrie valorile membrilor clasei cu cele citite de la modulul RealTimeClock
 void DateTime::now()
 {
 	rtcInstance.readTime();
@@ -152,6 +166,7 @@ void DateTime::now()
 	dow = rtcInstance.dow;
 }
 
+// Adauga ore in instanta curenta tinand cont de posibilitate de overflow (>24h adauga o zi)
 void DateTime::addHours(const int _h)
 {
 	int i=_h;
@@ -189,6 +204,7 @@ void DateTime::addHours(const int _h)
 	} while (i != 0);
 }
 
+// Adauga minute cu overflow
 void DateTime::addMinutes(const int _m)
 {
 	int i = _m;
@@ -226,6 +242,7 @@ void DateTime::addMinutes(const int _m)
 	} while (i != 0);	
 }
 
+// Adauga secunde cu overflow
 void DateTime::addSeconds(const int _s)
 {
 	int i = _s;
@@ -263,6 +280,7 @@ void DateTime::addSeconds(const int _s)
 	} while (i != 0);	
 }
 
+//Adauga zile cu overflow
 void DateTime::addDay(const int _d)
 {
 	int i = _d;
@@ -315,16 +333,19 @@ void DateTime::addDay(const int _d)
 	} while (i != 0);	
 }
 
+// Conversie intre valoare numerica si numele lunii asa cum a fost definita (ex. 4 = Apr)
 void DateTime::getMonthName(const int _m,char* val)
 {	
 	strcpy(val, months[_m]);	
 }
 
+// Conversie intre valorea numerica si ziua din saptamana (Ex. 1 = Mon)
 void DateTime::getWeekdayName(const int _dow,char* val)
 {	
 	strcpy(val, weekdays[_dow]);	
 }
 
+// Metoda combinata pentru a intoarce fie numele lunii, fie ziua din saptamana sub forma de sir formatat in variabila val
 void DateTime::formatDate(int dd, int mm,char* val)
 {		
 	if (dd)
@@ -333,6 +354,8 @@ void DateTime::formatDate(int dd, int mm,char* val)
 		return getMonthName(mm,val);
 }
 
+// Determina daca anul primit ca paramantru este an bisect
+// Implementra in cod a pseudocodului de aici : https://en.wikipedia.org/wiki/Leap_year#Algorithm
 bool DateTime::isLeapYear(int yyyy)
 {
 	if ((yyyy % 4 == 0) && (yyyy % 100 != 0))
@@ -353,6 +376,7 @@ bool DateTime::isLeapYear(int yyyy)
 	}
 }
 
+// Determina numarul de zile din luna month. Tine cont de an bisec
 int DateTime::daysInMonth(int month,int year)
 {
 	if (month == 2)
@@ -368,6 +392,7 @@ int DateTime::daysInMonth(int month,int year)
 		return 30;
 }
 
+// seteaza data si implicit calculeaza ce zi din saptamana este
 void DateTime::setDate(int _d)
 {
 	d = _d;

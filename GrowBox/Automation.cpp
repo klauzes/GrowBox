@@ -1,8 +1,15 @@
 #include "Automation.h"
-#include "PersistentData.h"
 #include "Hardware.h"
 #include "Log.h"
+#include "PersistentData.h"
 
+/*
+* Aceasta clasa se responsabilizeara cu modul automat de functionare a serei
+* Pe baza parametrarilor facute de utilizator si a citirilor de la senzori.
+*/
+
+
+// Constructori si distructori
 Automation::Automation():
 m_suriseHour {	0},
 m_sunlightHours{ 0 },
@@ -14,55 +21,62 @@ m_nextLogWrite { 0 },
 m_waterPumpOffTime { 0 }
 {
 	nextHeaderDateTime = new DateTime(true);
-	nextHeaderDateTime.setHour(0);
-	nextHeaderDateTime.setMinute(0);
-	nextHeaderDateTime.setSecond(0);
+	nextHeaderDateTime->setHour(0);
+	nextHeaderDateTime->setMinute(0);
+	nextHeaderDateTime->setSecond(0);
 }
 
 Automation::Automation(bool getPersistent) :Automation()
 {
 	if (getPersistent)
-		loadPersistent();	
+		loadPersistent();
 }
 
-Automation::Automation(const Automation& cpy):Automation()
+Automation::Automation(const Automation* cpy) :Automation()
 {
-	m_suriseHour = cpy.m_suriseHour;
-	m_sunlightHours = cpy.m_sunlightHours;
-	m_Temperature = cpy.m_Temperature;
-	m_maxAirHumidity = cpy.m_maxAirHumidity;
-	m_idealSoilHumidity = cpy.m_idealSoilHumidity;
+	m_suriseHour = cpy->m_suriseHour;
+	m_sunlightHours = cpy->m_sunlightHours;
+	m_Temperature = cpy->m_Temperature;
+	m_maxAirHumidity = cpy->m_maxAirHumidity;
+	m_idealSoilHumidity = cpy->m_idealSoilHumidity;
 }
 
 Automation::~Automation()
 {
+	if (nextHeaderDateTime != nullptr)
+	{
+		delete nextHeaderDateTime;
+		nextHeaderDateTime = nullptr;
+	}
 }
 
-void Automation::setSunriseHour(int val)
+// Getteri si setteri.
+void Automation::setSunriseHour(const int val)
 {
 	m_suriseHour = val;
 }
 
-void Automation::setSunlightHours(int val)
+void Automation::setSunlightHours(const int val)
 {
 	m_sunlightHours = val;
 }
 
-void Automation::setTemperature(int val)
+void Automation::setTemperature(const int val)
 {
 	m_Temperature = val;
 }
 
-void Automation::setMaximuAirHumidity(int val)
+void Automation::setMaximuAirHumidity(const int val)
 {
 	m_maxAirHumidity = val;
 }
 
-void Automation::setIdealSoilHumidity(int val)
+void Automation::setIdealSoilHumidity(const int val)
 {
 	m_idealSoilHumidity = val;
 }
 
+// Incarca in variabilele clasei Automation valorile salvate in EEPROM.
 void Automation::loadPersistent()
 {
 	PersistentData::getSunriseHour(m_suriseHour);
@@ -72,6 +86,7 @@ void Automation::loadPersistent()
 	PersistentData::getIdealSoilHumidity(m_idealSoilHumidity);
 }
 
+// Un alt accesor pentru stergerea datelor persistente.
 void Automation::deletePersistent()
 {
 	PersistentData::setSunriseHour(0);
@@ -82,6 +97,7 @@ void Automation::deletePersistent()
 	
 }
 
+// Salveaza configuratia actuala de automatizare in memoria non-volatila EEPROM
 void Automation::saveToPersistent()
 {
 	PersistentData::setSunriseHour(m_suriseHour);
@@ -91,8 +107,9 @@ void Automation::saveToPersistent()
 	PersistentData::setIdealSoilHumidity(m_idealSoilHumidity);
 }
 
+// Verifica daca valorile aflate in membrii acestei instante se incadreaza in parametrii normali pentru automatizare.
 bool Automation::isValid()
-{	
+{		
 	if (m_suriseHour >= 0 && m_suriseHour <= 23)
 	{
 		if (m_sunlightHours >= 1 && m_sunlightHours <= MAX_SUNLIGHT_HOURS)
@@ -112,8 +129,11 @@ bool Automation::isValid()
 	return false;
 }
 
+// Metoda ce efectueaza efectiv lucrul de automatizare. 
+// Actioneza dispozitivele hardware in functie de starea lor de determinare (vezi metodele aferente fiecarei determinari)
 void Automation::doRoutine()
 {	
+	//doar o configuratie valida poate fi executata.
 	if (!isValid())
 		return;
 
@@ -146,19 +166,22 @@ void Automation::doRoutine()
 	}
 }
 
+// Formateaza stringul ce se va scrie pe cardul SD cu informatii despre valorile actual masurata, cat si cele specificate in configuratie.
+// Se asigura ca fiecare nou jurnal va avea si antetul inclus.
 void Automation::writeLog()
 {
+	// workaround, cateodata cardul nu se initializeaza decat dupa o incercare de scriere?
 	if (!Log::hasCard())
 		Log("TryStart", true, true);
 	if (millis() > m_nextLogWrite && Log::hasCard())
 	{
 		m_nextLogWrite += DEFAULT_LOG_WRITE_INTERVAL;
 		DateTime today(true);
-		today.setHour(0); today.setMinute(0); today.setSecond(0);
-	
-		if (nextHeaderDateTime == today)
+		today.setHour(0); today.setMinute(0); today.setSecond(0);	
+		if (*nextHeaderDateTime == today)		
 		{
-			nextHeaderDateTime.addDay(1);		
+		
+			nextHeaderDateTime->addDay(1);		
 			Log("Requested Air Temperature, Max Air Humidity, Requested Soil Humidity, Actual Air Temperature, Actual Air Humidity, Actual Soil Humidity, Actual Particle Count, Lights State, Fan State, Heater State, Water Pump State", true, true);
 		}
 
@@ -193,6 +216,8 @@ void Automation::writeLog()
 	}
 }
 
+// Determina daca iluminatul artificial trebuie aprins sau nu.
+// Aceasta determinare tine cont de ora de pornire si de numarul de ore cat acestea trebuie sa fie aprinse.
 bool Automation::determineLightsState()
 {
 	DateTime now(true);
@@ -213,6 +238,8 @@ bool Automation::determineLightsState()
 	return false;
 }
 
+// Determina daca umiditatea este dincolo de parametrul maximal acceptat prin configuratie de utilizator
+// pe durata de functionare a sistemului de iluminat ventilatia este implicit pornita.
 bool Automation::determineAirHumidityState()
 {
 	int currentAirHumidity = Hardware::getHumidity();
@@ -226,6 +253,7 @@ bool Automation::determineAirHumidityState()
 	return false;
 }
 
+// Determina daca temperatura interna este pestea cea admisa. In caz afirmativ actionam ventilatorul.
 bool Automation::determineAirTemperature()
 {
 	int currentTemperature = Hardware::getTemperature();
@@ -235,15 +263,31 @@ bool Automation::determineAirTemperature()
 	return false;
 }
 
+// Determina pornirea pompei de irigare cu apa. Verificarea si irigarea se vad exclusiv cand iluminatul este inactiv 
+// pentru o periodata nu mai mare de DEFAULT_WATER_PUMP_ON_TIME si la un interval de DEFAULT_SOIL_HUMIDITY_CHECK_INTERVAL
 bool Automation::determineSoilHumidity()
 {
-	int idealSoil; PersistentData::getIdealSoilHumidity(idealSoil);
-	if (Hardware::getSoilHumidity() < idealSoil && m_lastSoilHumidityCheck <= millis() )
-	{		
-		m_lastSoilHumidityCheck = millis() + DEFAULT_SOIL_HUMIDITY_CHECK_INTERVAL;
-		return true;
+	DateTime now(true);
+	now.setMinute(0); now.setSecond(0);
+	DateTime irigationTime(now);
+
+	int idealSoil, persistentSunriseHour, persistentSunDuration;
+	PersistentData::getSunriseHour(persistentSunriseHour);
+	PersistentData::getSunlightHours(persistentSunDuration);
+	PersistentData::getIdealSoilHumidity(idealSoil);
+
+	irigationTime.setHour(persistentSunriseHour);
+	irigationTime.addHours(persistentSunDuration + 1);
+
+	if (DateTime(true) > irigationTime)
+	{
+		if (Hardware::getSoilHumidity() < idealSoil && m_lastSoilHumidityCheck <= millis())
+		{
+			m_lastSoilHumidityCheck = millis() + DEFAULT_SOIL_HUMIDITY_CHECK_INTERVAL;
+			return true;
+		}
 	}
+
 	return false;
 }
-
 

@@ -1,29 +1,39 @@
+/****************************************************************************
+*  PROIECT LICENTA:     -SISTEM ELECTRONIC PENTRU AUTOMATIZAREA UNEI SERE-  *
+*  LIMBAJ:              C++                                                 *
+*  MICROPROCESOR        ATmega2560                                          *
+*  STUDENT:             ISPAS N.O. CLAUDIU-OCTAVIAN                         *
+*  GRUPA:               307                                                 *
+*  PROMOTIA             2018-2021                                           *
+*  FACULTATEA DE INFORMATICA                                                *
+*  UNIVERSITATEA TITU MAIORESCU                                             *
+* ***************************************************************************/
 #pragma once
-#include <Arduino.h>
-#include "Pins.h"
 #include "DateTime.h"
+#include "Pins.h"
+
 
 class Automation
 {
 public:
 	Automation();
 	Automation(bool getPersistent);
-	Automation(const Automation& cpy);
+	Automation(const Automation* cpy);
 	~Automation();
 
-	void setSunriseHour(int val);
+	void setSunriseHour(const int val);
 	int  getSunriseHour() { return m_suriseHour;};
 
-	void setSunlightHours(int val);
+	void setSunlightHours(const int val);
 	int  getSunlightHours() { return m_sunlightHours; };
 	
-	void setTemperature(int val);
+	void setTemperature(const int val);
 	int  getTemperature() { return m_Temperature; };
 
-	void setMaximuAirHumidity(int val);
+	void setMaximuAirHumidity(const int val);
 	int  getMaximuAirHumidity() { return m_maxAirHumidity; };
 
-	void setIdealSoilHumidity(int val);
+	void setIdealSoilHumidity(const int val);
 	int  getIdealSoilHumidity() { return m_idealSoilHumidity; };
 
 	void loadPersistent();
@@ -44,7 +54,7 @@ private:
 	unsigned long m_nextLogWrite;
 	unsigned long m_waterPumpOffTime;
 	void writeLog();
-	DateTime nextHeaderDateTime;
+	DateTime* nextHeaderDateTime;
 
 	bool determineLightsState();
 	bool determineAirHumidityState();

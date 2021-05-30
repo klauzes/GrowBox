@@ -1,11 +1,21 @@
+/****************************************************************************
+*  PROIECT LICENTA:     -SISTEM ELECTRONIC PENTRU AUTOMATIZAREA UNEI SERE-  *
+*  LIMBAJ:              C++                                                 *
+*  MICROPROCESOR        ATmega2560                                          *
+*  STUDENT:             ISPAS N.O. CLAUDIU-OCTAVIAN                         *
+*  GRUPA:               307                                                 *
+*  PROMOTIA             2018-2021                                           *
+*  FACULTATEA DE INFORMATICA                                                *
+*  UNIVERSITATEA TITU MAIORESCU                                             *
+* ***************************************************************************/
 #pragma once
 class Hardware final
 {
 public:	
 	static double getTemperature();
 	static double getHumidity();
-	static double getWaterLevel(); //TODO implement Liters (as function of volume) but for now ADC
-	static double getSoilHumidity(); //TODO implement as percentage but for now ADC value 
+	static double getWaterLevel(); 
+	static double getSoilHumidity();
 	static double getParticleCount();
 
 	static void setWaterPump(bool state);

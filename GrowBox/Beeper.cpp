@@ -3,6 +3,11 @@
 #include <Arduino.h>
 #include "PersistentData.h"
 
+/*
+* Aceata este o clasa statica folosita pentru a genera tonori cu ajutorul difuzorului piezo
+* Ofera si trei metode cu tonuri prestabilite, al caror nume sugereaza utilizarea adecvata
+*/
+
 void Beeper::beep(int freq, int dur)
 {
     analogWrite(BEEPER, freq);
